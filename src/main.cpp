@@ -1997,20 +1997,10 @@ public:
 				if (GetOpenFileNameA(&ofn)) {
 					filename = buffer;
 				}
-#elif defined(__linux__) && !defined(VK_USE_PLATFORM_ANDROID_KHR)
-				char buffer[1024];
-				FILE *file = popen("zenity --title=\"Select a glTF file to load\" --file-filter=\"glTF files | *.gltf *.glb\" --file-selection", "r");
-				if (file) {
-					while (fgets(buffer, sizeof(buffer), file)) {
-						filename += buffer;
-					};
-					filename.erase(std::remove(filename.begin(), filename.end(), '\n'), filename.end());
-					std::cout << filename << std::endl;
-				}
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-				opengltfFileButtonClicked = true;
-				// We must load file in render()
+#else
+#error More migration needed
 #endif
+
 				if (!filename.empty()) {
 					vkDeviceWaitIdle(device);
 					loadScene(filename);
@@ -2231,78 +2221,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int)
 	delete(vulkanApplication);
 	return 0;
 }
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-// Android entry point
-void android_main(android_app* state)
-{
-	vulkanApplication = new VulkanApplication();
-	state->userData = vulkanApplication;
-	state->onAppCmd = VulkanApplication::handleAppCommand;
-	state->onInputEvent = VulkanApplication::handleAppInput;
-	androidApp = state;
-	vks::android::getDeviceConfig();
-	vulkanApplication->renderLoop();
-	delete(vulkanApplication);
-}
-#elif defined(_DIRECT2DISPLAY)
-// Linux entry point with direct to display wsi
-static void handleEvent()
-{
-}
-int main(const int argc, const char *argv[])
-{
-	for (size_t i = 0; i < argc; i++) { VulkanApplication::args.push_back(argv[i]); };
-	vulkanApplication = new VulkanApplication();
-	vulkanApplication->initVulkan();
-	vulkanApplication->prepare();
-	vulkanApplication->renderLoop();
-	delete(vulkanApplication);
-	return 0;
-}
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-int main(const int argc, const char *argv[])
-{
-	for (size_t i = 0; i < argc; i++) { VulkanApplication::args.push_back(argv[i]); };
-	vulkanApplication = new VulkanApplication();
-	vulkanApplication->initVulkan();
-	vulkanApplication->setupWindow();
-	vulkanApplication->prepare();
-	vulkanApplication->renderLoop();
-	delete(vulkanApplication);
-	return 0;
-}
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-static void handleEvent(const xcb_generic_event_t *event)
-{
-	if (vulkanApplication != NULL)
-	{
-		vulkanApplication->handleEvent(event);
-	}
-}
-int main(const int argc, const char *argv[])
-{
-	for (size_t i = 0; i < argc; i++) { VulkanApplication::args.push_back(argv[i]); };
-	vulkanApplication = new VulkanApplication();
-	vulkanApplication->initVulkan();
-	vulkanApplication->setupWindow();
-	vulkanApplication->prepare();
-	vulkanApplication->renderLoop();
-	delete(vulkanApplication);
-	return 0;
-}
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-int main(const int argc, const char *argv[])
-{
-	@autoreleasepool
-	{
-		for (size_t i = 0; i < argc; i++) { VulkanApplication::args.push_back(argv[i]); };
-		vulkanApplication = new VulkanApplication();
-		vulkanApplication->initVulkan();
-		vulkanApplication->setupWindow();
-		vulkanApplication->prepare();
-		vulkanApplication->renderLoop();
-		delete(vulkanApplication);
-	}
-	return 0;
-}
+#else
+#error More migration needed
 #endif
+
