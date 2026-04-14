@@ -1,3 +1,5 @@
+Attempting to port `https://github.com/SaschaWillems/Vulkan-glTF-PBR/tree/master` to SDL3 using the GPU API.
+
 # Vulkan physically-Based Rendering using glTF 2.0 models
 
 <img src="./screenshots/damagedhelmet.jpg" width="644px"> <img src="./screenshots/polly.jpg" width="320px"> <img src="./screenshots/busterdrone.jpg" width="320px">
