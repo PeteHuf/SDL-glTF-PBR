@@ -107,7 +107,7 @@ void VulkanExampleBase::prepare()
 	cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
 	cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(device_VULKAN, &cmdPoolInfo, nullptr, &cmdPool));
 
 	/*
 		Render pass
@@ -204,7 +204,7 @@ void VulkanExampleBase::prepare()
 		renderPassCI.pSubpasses = &subpass;
 		renderPassCI.dependencyCount = 2;
 		renderPassCI.pDependencies = dependencies.data();
-		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassCI, nullptr, &renderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(device_VULKAN, &renderPassCI, nullptr, &renderPass));
 	}
 	else {
 		std::array<VkAttachmentDescription, 2> attachments = {};
@@ -273,7 +273,7 @@ void VulkanExampleBase::prepare()
 		renderPassCI.pSubpasses = &subpassDescription;
 		renderPassCI.dependencyCount = static_cast<uint32_t>(dependencies.size());
 		renderPassCI.pDependencies = dependencies.data();
-		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassCI, nullptr, &renderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(device_VULKAN, &renderPassCI, nullptr, &renderPass));
 	}
 
 	/*
@@ -281,7 +281,7 @@ void VulkanExampleBase::prepare()
 	*/
 	VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
 	pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	VK_CHECK_RESULT(vkCreatePipelineCache(device_VULKAN, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 
 	/*
 		Frame buffer
@@ -311,29 +311,30 @@ void VulkanExampleBase::renderFrame()
 
 void VulkanExampleBase::renderLoop()
 {
-	destWidth = width;
-	destHeight = height;
-#if defined(_WIN32)
-	MSG msg;
-	bool quitMessageReceived = false;
-	while (!quitMessageReceived) {
-		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-			if (msg.message == WM_QUIT) {
-				quitMessageReceived = true;
-				break;
-			}
-		}
-		if (!IsIconic(window)) {
-			renderFrame();
-		}
-	}
-#else
-#error More migration needed
-#endif
-	// Flush device to make sure all resources can be freed
-	vkDeviceWaitIdle(device);
+	// PETEHUF_TODO: impl
+// 	destWidth = width;
+// 	destHeight = height;
+// #if defined(_WIN32)
+// 	MSG msg;
+// 	bool quitMessageReceived = false;
+// 	while (!quitMessageReceived) {
+// 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+// 			TranslateMessage(&msg);
+// 			DispatchMessage(&msg);
+// 			if (msg.message == WM_QUIT) {
+// 				quitMessageReceived = true;
+// 				break;
+// 			}
+// 		}
+// 		if (!IsIconic(window_WIN32)) {
+// 			renderFrame();
+// 		}
+// 	}
+// #else
+// #error More migration needed
+// #endif
+// 	// Flush device to make sure all resources can be freed
+// 	vkDeviceWaitIdle(device_VULKAN);
 }
 
 VulkanExampleBase::VulkanExampleBase()
@@ -360,7 +361,7 @@ VulkanExampleBase::VulkanExampleBase()
 			if (numConvPtr != args[i + 1]) { height = h; };
 		}
 	}
-	
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 	// Vulkan library is loaded dynamically on Android
 	bool libLoaded = vks::android::loadVulkanLibrary();
@@ -385,407 +386,506 @@ VulkanExampleBase::VulkanExampleBase()
 
 VulkanExampleBase::~VulkanExampleBase()
 {
-	// Clean up Vulkan resources
-	swapChain.cleanup();
-	vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-	vkDestroyRenderPass(device, renderPass, nullptr);
-	for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-		vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
-	}
-	vkDestroyImageView(device, depthStencil.view, nullptr);
-	vkDestroyImage(device, depthStencil.image, nullptr);
-	vkFreeMemory(device, depthStencil.mem, nullptr);
-	vkDestroyPipelineCache(device, pipelineCache, nullptr);
-	vkDestroyCommandPool(device, cmdPool, nullptr);
-	if (settings.multiSampling) {
-		vkDestroyImage(device, multisampleTarget.color.image, nullptr);
-		vkDestroyImageView(device, multisampleTarget.color.view, nullptr);
-		vkFreeMemory(device, multisampleTarget.color.memory, nullptr);
-		vkDestroyImage(device, multisampleTarget.depth.image, nullptr);
-		vkDestroyImageView(device, multisampleTarget.depth.view, nullptr);
-		vkFreeMemory(device, multisampleTarget.depth.memory, nullptr);
-	}
-	delete vulkanDevice;
-	if (settings.validation) {
-		vkDestroyDebugReportCallback(instance, debugReportCallback, nullptr);
-	}
-	vkDestroyInstance(instance, nullptr);
-#if defined(_DIRECT2DISPLAY)
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	wl_shell_surface_destroy(shell_surface);
-	wl_surface_destroy(surface);
-	if (keyboard)
-		wl_keyboard_destroy(keyboard);
-	if (pointer)
-		wl_pointer_destroy(pointer);
-	wl_seat_destroy(seat);
-	wl_shell_destroy(shell);
-	wl_compositor_destroy(compositor);
-	wl_registry_destroy(registry);
-	wl_display_disconnect(display);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	// todo : android cleanup (if required)
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-	xcb_destroy_window(connection, window);
-	xcb_disconnect(connection);
-#endif
+	SDL_WaitForGPUIdle(device);
+	// ImGui_ImplSDL3_Shutdown();
+	// ImGui_ImplSDLGPU3_Shutdown();// PETEHUF_TODO: impl
+	// ImGui::DestroyContext();
+
+	SDL_ReleaseWindowFromGPUDevice(device, window);
+	SDL_DestroyGPUDevice(device);
+
+	SDL_DestroyWindow(window);
+
+
+	// PETEHUF_TODO: impl
+	// // Clean up Vulkan resources
+	// swapChain.cleanup();
+	// vkDestroyDescriptorPool(device_VULKAN, descriptorPool, nullptr);
+	// vkDestroyRenderPass(device_VULKAN, renderPass, nullptr);
+	// for (uint32_t i = 0; i < frameBuffers.size(); i++) {
+	// 	vkDestroyFramebuffer(device_VULKAN, frameBuffers[i], nullptr);
+	// }
+	// vkDestroyImageView(device_VULKAN, depthStencil.view, nullptr);
+	// vkDestroyImage(device_VULKAN, depthStencil.image, nullptr);
+	// vkFreeMemory(device_VULKAN, depthStencil.mem, nullptr);
+	// vkDestroyPipelineCache(device_VULKAN, pipelineCache, nullptr);
+	// vkDestroyCommandPool(device_VULKAN, cmdPool, nullptr);
+	// if (settings.multiSampling) {
+	// 	vkDestroyImage(device_VULKAN, multisampleTarget.color.image, nullptr);
+	// 	vkDestroyImageView(device_VULKAN, multisampleTarget.color.view, nullptr);
+	// 	vkFreeMemory(device_VULKAN, multisampleTarget.color.memory, nullptr);
+	// 	vkDestroyImage(device_VULKAN, multisampleTarget.depth.image, nullptr);
+	// 	vkDestroyImageView(device_VULKAN, multisampleTarget.depth.view, nullptr);
+	// 	vkFreeMemory(device_VULKAN, multisampleTarget.depth.memory, nullptr);
+	// }
+	// delete vulkanDevice;
+	// if (settings.validation) {
+	// 	vkDestroyDebugReportCallback(instance, debugReportCallback, nullptr);
+	// }
+	// vkDestroyInstance(instance, nullptr);
 }
 
 void VulkanExampleBase::initVulkan()
 {
-	VkResult err;
-
-	/*
-		Instance creation
-	*/
-	err = createInstance(settings.validation);
-	if (err) {
-		std::cerr << "Could not create Vulkan instance!" << std::endl;
-		exit(err);
+	// Create GPU Device // PETEHUF_TODO: cleanup or move
+	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
+	if (device == nullptr) {
+		SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
+		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
 	}
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	vks::android::loadVulkanFunctions(instance);
-#endif
-
-	/*
-		Validation layers
-	*/
-	if (settings.validation) {
-		vkCreateDebugReportCallback = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"));
-		vkDestroyDebugReportCallback = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
-		VkDebugReportCallbackCreateInfoEXT debugCreateInfo{};
-		debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-		debugCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debugMessageCallback;
-		debugCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		VK_CHECK_RESULT(vkCreateDebugReportCallback(instance, &debugCreateInfo, nullptr, &debugReportCallback));
+	// Claim window for GPU Device
+	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
+		SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
+		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
 	}
 
-	/*
-		GPU selection
-	*/
-	uint32_t gpuCount = 0;
-	VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
-	assert(gpuCount > 0);
-	std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-	err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
-	if (err) {
-		std::cerr << "Could not enumerate physical devices!" << std::endl;
-		exit(err);
-	}
-	uint32_t selectedDevice = 0;
-#if !defined(VK_USE_PLATFORM_ANDROID_KHR)	
-	for (size_t i = 0; i < args.size(); i++) {
-		if ((args[i] == std::string("-g")) || (args[i] == std::string("--gpu"))) {
-			char* endptr;
-			uint32_t index = strtol(args[i + 1], &endptr, 10);
-			if (endptr != args[i + 1])  { 
-				if (index > gpuCount - 1) {
-					std::cerr << "Selected device index " << index << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)" << std::endl;
-				} else {
-					std::cout << "Selected Vulkan device " << index << std::endl;
-					selectedDevice = index;
-				}
-			};
-			break;
-		}
-	}
-#endif
+	SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 
-	physicalDevice = physicalDevices[selectedDevice];
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	(void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 
-	vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
 
-	/*
-		Device creation
-	*/
-	vulkanDevice = new vks::VulkanDevice(physicalDevice);
-	VkPhysicalDeviceFeatures enabledFeatures{};
-	if (deviceFeatures.samplerAnisotropy) {
-		enabledFeatures.samplerAnisotropy = VK_TRUE;
-	}
-	std::vector<const char*> enabledExtensions{};
-	VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
-	if (res != VK_SUCCESS) {
-		std::cerr << "Could not create Vulkan device!" << std::endl;
-		exit(res);
-	}
-	device = vulkanDevice->logicalDevice;
-
-	/*
-		Graphics queue
-	*/
-	vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
-
-	/*
-		Suitable depth format
-	*/
-	std::vector<VkFormat> depthFormats = { VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D16_UNORM };
-	VkBool32 validDepthFormat = false;
-	for (auto& format : depthFormats) {
-		VkFormatProperties formatProps;
-		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
-		if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-			depthFormat = format;
-			validDepthFormat = true;
-			break;
-		}
-	}
-	assert(validDepthFormat);
-
-	swapChain.connect(instance, physicalDevice, device);
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	// Get Android device name and manufacturer (to display along GPU name)
-	androidProduct = "";
-	char prop[PROP_VALUE_MAX+1];
-	int len = __system_property_get("ro.product.manufacturer", prop);
-	if (len > 0) {
-		androidProduct += std::string(prop) + " ";
-	};
-	len = __system_property_get("ro.product.model", prop);
-	if (len > 0) {
-		androidProduct += std::string(prop);
-	};
-	LOGD("androidProduct = %s", androidProduct.c_str());
-#endif	
+	// VkResult err;
+	//
+	// /*
+	// 	Instance creation
+	// */
+	// err = createInstance(settings.validation);
+	// if (err) {
+	// 	std::cerr << "Could not create Vulkan instance!" << std::endl;
+	// 	exit(err);
+	// }
+	//
+	// /*
+	// 	Validation layers
+	// */
+	// if (settings.validation) {
+	// 	vkCreateDebugReportCallback = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT"));
+	// 	vkDestroyDebugReportCallback = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT"));
+	// 	VkDebugReportCallbackCreateInfoEXT debugCreateInfo{};
+	// 	debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+	// 	debugCreateInfo.pfnCallback = (PFN_vkDebugReportCallbackEXT)debugMessageCallback;
+	// 	debugCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+	// 	VK_CHECK_RESULT(vkCreateDebugReportCallback(instance, &debugCreateInfo, nullptr, &debugReportCallback));
+	// }
+	//
+	// /*
+	// 	GPU selection
+	// */
+	// uint32_t gpuCount = 0;
+	// VK_CHECK_RESULT(vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr));
+	// assert(gpuCount > 0);
+	// std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
+	// err = vkEnumeratePhysicalDevices(instance, &gpuCount, physicalDevices.data());
+	// if (err) {
+	// 	std::cerr << "Could not enumerate physical devices!" << std::endl;
+	// 	exit(err);
+	// }
+	// uint32_t selectedDevice = 0;
+	// for (size_t i = 0; i < args.size(); i++) {
+	// 	if ((args[i] == std::string("-g")) || (args[i] == std::string("--gpu"))) {
+	// 		char* endptr;
+	// 		uint32_t index = strtol(args[i + 1], &endptr, 10);
+	// 		if (endptr != args[i + 1])  {
+	// 			if (index > gpuCount - 1) {
+	// 				std::cerr << "Selected device index " << index << " is out of range, reverting to device 0 (use -listgpus to show available Vulkan devices)" << std::endl;
+	// 			} else {
+	// 				std::cout << "Selected Vulkan device " << index << std::endl;
+	// 				selectedDevice = index;
+	// 			}
+	// 		};
+	// 		break;
+	// 	}
+	// }
+	//
+	// physicalDevice = physicalDevices[selectedDevice];
+	//
+	// vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+	// vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
+	// vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemoryProperties);
+	//
+	// /*
+	// 	Device creation
+	// */
+	// vulkanDevice = new vks::VulkanDevice(physicalDevice);
+	// VkPhysicalDeviceFeatures enabledFeatures{};
+	// if (deviceFeatures.samplerAnisotropy) {
+	// 	enabledFeatures.samplerAnisotropy = VK_TRUE;
+	// }
+	// std::vector<const char*> enabledExtensions{};
+	// VkResult res = vulkanDevice->createLogicalDevice(enabledFeatures, enabledExtensions);
+	// if (res != VK_SUCCESS) {
+	// 	std::cerr << "Could not create Vulkan device!" << std::endl;
+	// 	exit(res);
+	// }
+	// device = vulkanDevice->logicalDevice;
+	//
+	// /*
+	// 	Graphics queue
+	// */
+	// vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
+	//
+	// /*
+	// 	Suitable depth format
+	// */
+	// std::vector<VkFormat> depthFormats = { VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D16_UNORM };
+	// VkBool32 validDepthFormat = false;
+	// for (auto& format : depthFormats) {
+	// 	VkFormatProperties formatProps;
+	// 	vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
+	// 	if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+	// 		depthFormat = format;
+	// 		validDepthFormat = true;
+	// 		break;
+	// 	}
+	// }
+	// assert(validDepthFormat);
+	//
+	// swapChain.connect(instance, physicalDevice, device);
 }
 
-#if defined(_WIN32)
-
-HWND VulkanExampleBase::setupWindow(HINSTANCE hinstance, WNDPROC wndproc)
+void VulkanExampleBase::setupWindow()
 {
-	this->windowInstance = hinstance;
+	SDL_SetAppMetadata(name.c_str(), "1.0", name.c_str());
 
-	WNDCLASSEX wndClass;
-
-	wndClass.cbSize = sizeof(WNDCLASSEX);
-	wndClass.style = CS_HREDRAW | CS_VREDRAW;
-	wndClass.lpfnWndProc = wndproc;
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
-	wndClass.hInstance = hinstance;
-	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wndClass.lpszMenuName = NULL;
-	wndClass.lpszClassName = name.c_str();
-	wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
-
-	if (!RegisterClassEx(&wndClass)) {
-		std::cout << "Could not register window class!\n";
-		fflush(stdout);
-		exit(1);
+	// Setup SDL
+	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
+		SDL_Log("Error: SDL_Init(): %s", SDL_GetError());
+		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
 	}
 
-	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-
-	if (settings.fullscreen) {
-		DEVMODE dmScreenSettings;
-		memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
-		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
-		dmScreenSettings.dmPelsWidth = screenWidth;
-		dmScreenSettings.dmPelsHeight = screenHeight;
-		dmScreenSettings.dmBitsPerPel = 32;
-		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-		if ((width != (uint32_t)screenWidth) && (height != (uint32_t)screenHeight)) {
-			if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)	{
-				if (MessageBox(NULL, "Fullscreen Mode not supported!\n Switch to window mode?", "Error", MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
-					settings.fullscreen = false;
-				} else {
-					return nullptr;
-				}
-			}
-		}
+	// Create SDL window graphics context
+	const float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+	constexpr SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+	window = SDL_CreateWindow(name.c_str(), static_cast<int>(1280 * main_scale), static_cast<int>(800 * main_scale), window_flags);
+	if (window == nullptr) {
+		SDL_Log("Error: SDL_CreateWindow(): %s", SDL_GetError());
+		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
 	}
 
-	DWORD dwExStyle;
-	DWORD dwStyle;
+	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	SDL_ShowWindow(window);
 
-	if (settings.fullscreen) {
-		dwExStyle = WS_EX_APPWINDOW;
-		dwStyle = WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	} else {
-		dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-		dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
-	}
+	// // Create GPU Device // PETEHUF_TODO: cleanup or move
+	// gpu_device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
+	// if (gpu_device == nullptr) {
+	// 	SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
+	// 	return SDL_APP_FAILURE;
+	// }
+	//
+	// // Claim window for GPU Device
+	// if (!SDL_ClaimWindowForGPUDevice(gpu_device, window)) {
+	// 	SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
+	// 	return SDL_APP_FAILURE;
+	// }
+	//
+	// SDL_SetGPUSwapchainParameters(gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
+	//
+	// // Setup Dear ImGui context
+	// IMGUI_CHECKVERSION();
+	// ImGui::CreateContext();
+	// ImGuiIO& io = ImGui::GetIO();
+	// (void)io;
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+	//
+	// // Setup Dear ImGui style
+	// ImGui::StyleColorsDark();
+	// //ImGui::StyleColorsLight();
+	//
+	// // Setup scaling
+	// ImGuiStyle& style = ImGui::GetStyle();
+	// style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+	// style.FontScaleDpi = main_scale; // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
+	//
+	// // Setup Platform/Renderer backends
+	// ImGui_ImplSDL3_InitForSDLGPU(window);
+	// ImGui_ImplSDLGPU3_InitInfo init_info = {};
+	// init_info.Device = gpu_device;
+	// init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
+	// init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1; // Only used in multi-viewports mode.
+	// init_info.SwapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // Only used in multi-viewports mode.
+	// init_info.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
+	// ImGui_ImplSDLGPU3_Init(&init_info);
 
-	RECT windowRect;
-	windowRect.left = 0L;
-	windowRect.top = 0L;
-	windowRect.right = settings.fullscreen ? (long)screenWidth : (long)width;
-	windowRect.bottom = settings.fullscreen ? (long)screenHeight : (long)height;
 
-	AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
+	// Load Fonts
+	// - If fonts are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
+	//   This selection is based on (style.FontSizeBase * style.FontScaleMain * style.FontScaleDpi) reaching a small threshold.
+	// - You can load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+	// - If a file cannot be loaded, AddFont functions will return a nullptr. Please handle those errors in your code (e.g. use an assertion, display an error and quit).
+	// - Read 'docs/FONTS.md' for more instructions and details.
+	// - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use FreeType for higher quality font rendering.
+	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+	//style.FontSizeBase = 20.0f;
+	//io.Fonts->AddFontDefaultVector();
+	//io.Fonts->AddFontDefaultBitmap();
+	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
+	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
+	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
+	//IM_ASSERT(font != nullptr);
+	// PETEHUF_TODO: impl
 
-	window = CreateWindowEx(WS_EX_ACCEPTFILES,
-		name.c_str(),
-		title.c_str(),
-		dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		0,
-		0,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
-		NULL,
-		NULL,
-		hinstance,
-		NULL);
-
-	if (!settings.fullscreen) {
-		uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
-		uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
-		SetWindowPos(window, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	}
-
-	if (!window) {
-		printf("Could not create window!\n");
-		fflush(stdout);
-		return nullptr;
-		exit(1);
-	}
-
-	ShowWindow(window, SW_SHOW);
-	SetForegroundWindow(window);
-	SetFocus(window);
-
-	return window;
+	// this->windowInstance = hinstance;
+	//
+	// WNDCLASSEX wndClass;
+	//
+	// wndClass.cbSize = sizeof(WNDCLASSEX);
+	// wndClass.style = CS_HREDRAW | CS_VREDRAW;
+	// wndClass.lpfnWndProc = wndproc;
+	// wndClass.cbClsExtra = 0;
+	// wndClass.cbWndExtra = 0;
+	// wndClass.hInstance = hinstance;
+	// wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	// wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	// wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+	// wndClass.lpszMenuName = NULL;
+	// wndClass.lpszClassName = name.c_str();
+	// wndClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
+	//
+	// if (!RegisterClassEx(&wndClass)) {
+	// 	std::cout << "Could not register window class!\n";
+	// 	fflush(stdout);
+	// 	exit(1);
+	// }
+	//
+	// int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	// int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	//
+	// if (settings.fullscreen) {
+	// 	DEVMODE dmScreenSettings;
+	// 	memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));
+	// 	dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+	// 	dmScreenSettings.dmPelsWidth = screenWidth;
+	// 	dmScreenSettings.dmPelsHeight = screenHeight;
+	// 	dmScreenSettings.dmBitsPerPel = 32;
+	// 	dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+	// 	if ((width != (uint32_t)screenWidth) && (height != (uint32_t)screenHeight)) {
+	// 		if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)	{
+	// 			if (MessageBox(NULL, "Fullscreen Mode not supported!\n Switch to window mode?", "Error", MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+	// 				settings.fullscreen = false;
+	// 			} else {
+	// 				return nullptr;
+	// 			}
+	// 		}
+	// 	}
+	// }
+	//
+	// DWORD dwExStyle;
+	// DWORD dwStyle;
+	//
+	// if (settings.fullscreen) {
+	// 	dwExStyle = WS_EX_APPWINDOW;
+	// 	dwStyle = WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+	// } else {
+	// 	dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+	// 	dwStyle = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+	// }
+	//
+	// RECT windowRect;
+	// windowRect.left = 0L;
+	// windowRect.top = 0L;
+	// windowRect.right = settings.fullscreen ? (long)screenWidth : (long)width;
+	// windowRect.bottom = settings.fullscreen ? (long)screenHeight : (long)height;
+	//
+	// AdjustWindowRectEx(&windowRect, dwStyle, FALSE, dwExStyle);
+	//
+	// window = CreateWindowEx(WS_EX_ACCEPTFILES,
+	// 	name.c_str(),
+	// 	title.c_str(),
+	// 	dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	// 	0,
+	// 	0,
+	// 	windowRect.right - windowRect.left,
+	// 	windowRect.bottom - windowRect.top,
+	// 	NULL,
+	// 	NULL,
+	// 	hinstance,
+	// 	NULL);
+	//
+	// if (!settings.fullscreen) {
+	// 	uint32_t x = (GetSystemMetrics(SM_CXSCREEN) - windowRect.right) / 2;
+	// 	uint32_t y = (GetSystemMetrics(SM_CYSCREEN) - windowRect.bottom) / 2;
+	// 	SetWindowPos(window, 0, x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	// }
+	//
+	// if (!window) {
+	// 	printf("Could not create window!\n");
+	// 	fflush(stdout);
+	// 	return nullptr;
+	// 	exit(1);
+	// }
+	//
+	// ShowWindow(window, SW_SHOW);
+	// SetForegroundWindow(window);
+	// SetFocus(window);
 }
 
-void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+SDL_AppResult VulkanExampleBase::handleMessages(void* appstate, SDL_Event* event)
 {
-	switch (uMsg)
-	{
-	case WM_CLOSE:
-		prepared = false;
-		DestroyWindow(hWnd);
-		PostQuitMessage(0);
-		break;
-	case WM_PAINT:
-		ValidateRect(window, NULL);
-		break;
-	case WM_KEYDOWN:
-		switch (wParam)
-		{
-		case KEY_P:
-			paused = !paused;
-			break;
-		case KEY_ESCAPE:
-			PostQuitMessage(0);
-			break;
+	// Poll and handle events (inputs, window resize, etc.)
+	// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
+	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
+	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+	//ImGui_ImplSDL3_ProcessEvent(event); // PETEHUF_TODO: putback
+	if (event->type == SDL_EVENT_QUIT ||
+		(event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event->window.windowID == SDL_GetWindowID(window))) {
+		return SDL_APP_SUCCESS;
 		}
+	else if (event->type == SDL_EVENT_KEY_DOWN) {
+		if (event->key.key == SDLK_RETURN && (event->key.mod & SDL_KMOD_ALT) != 0) {
+			// toggle fullscreen
+			const SDL_WindowFlags windowFlags = SDL_GetWindowFlags(window);
+			const bool is_fullscreen = (windowFlags & SDL_WINDOW_FULLSCREEN) == SDL_WINDOW_FULLSCREEN;
+			if (!SDL_SetWindowFullscreen(window, !is_fullscreen)) {
+				SDL_Log("Failed to toggle fullscreen: %s", SDL_GetError());
+			}
+		}
+	}
 
-		if (camera.firstperson)
-		{
-			switch (wParam)
-			{
-			case KEY_W:
-				camera.keys.up = true;
-				break;
-			case KEY_S:
-				camera.keys.down = true;
-				break;
-			case KEY_A:
-				camera.keys.left = true;
-				break;
-			case KEY_D:
-				camera.keys.right = true;
-				break;
-			}
-		}
+	return SDL_APP_CONTINUE;
 
-		break;
-	case WM_KEYUP:
-		if (camera.firstperson)
-		{
-			switch (wParam)
-			{
-			case KEY_W:
-				camera.keys.up = false;
-				break;
-			case KEY_S:
-				camera.keys.down = false;
-				break;
-			case KEY_A:
-				camera.keys.left = false;
-				break;
-			case KEY_D:
-				camera.keys.right = false;
-				break;
-			}
-		}
-		break;
-	case WM_LBUTTONDOWN:
-		mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		mouseButtons.left = true;
-		break;
-	case WM_RBUTTONDOWN:
-		mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		mouseButtons.right = true;
-		break;
-	case WM_MBUTTONDOWN:
-		mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-		mouseButtons.middle = true;
-		break;
-	case WM_LBUTTONUP:
-		mouseButtons.left = false;
-		break;
-	case WM_RBUTTONUP:
-		mouseButtons.right = false;
-		break;
-	case WM_MBUTTONUP:
-		mouseButtons.middle = false;
-		break;
-	case WM_MOUSEWHEEL:
-	{
-		short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-		camera.translate(glm::vec3(0.0f, 0.0f, -(float)wheelDelta * 0.005f * camera.movementSpeed));
-		break;
-	}
-	case WM_MOUSEMOVE:
-	{
-		handleMouseMove(LOWORD(lParam), HIWORD(lParam));
-		break;
-	}
-	case WM_SIZE:
-		if ((prepared) && (wParam != SIZE_MINIMIZED)) {
-			if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))) {
-				destWidth = LOWORD(lParam);
-				destHeight = HIWORD(lParam);
-				windowResize();
-			}
-		}
-		break;
-	case WM_ENTERSIZEMOVE:
-		resizing = true;
-		break;
-	case WM_EXITSIZEMOVE:
-		resizing = false;
-		break;
-	case WM_DROPFILES:
-		{
-			std::string fname;
-			HDROP hDrop = reinterpret_cast<HDROP>(wParam);
-			// extract files here
-			char filename[MAX_PATH];
-			uint32_t count = DragQueryFileA(hDrop, -1, nullptr, 0);
-			for (uint32_t i = 0; i < count; ++i) {
-				if (DragQueryFileA(hDrop, i, filename, MAX_PATH)) {
-					fname = filename;
-				}
-				break;
-			}
-			DragFinish(hDrop);
-			fileDropped(fname);
-			break;
-		}
-	}
+
+	// PETEHUF_TODO: impl
+
+	// switch (uMsg)
+	// {
+	// case WM_CLOSE:
+	// 	prepared = false;
+	// 	DestroyWindow(hWnd);
+	// 	PostQuitMessage(0);
+	// 	break;
+	// case WM_PAINT:
+	// 	ValidateRect(window, NULL);
+	// 	break;
+	// case WM_KEYDOWN:
+	// 	switch (wParam)
+	// 	{
+	// 	case KEY_P:
+	// 		paused = !paused;
+	// 		break;
+	// 	case KEY_ESCAPE:
+	// 		PostQuitMessage(0);
+	// 		break;
+	// 	}
+	//
+	// 	if (camera.firstperson)
+	// 	{
+	// 		switch (wParam)
+	// 		{
+	// 		case KEY_W:
+	// 			camera.keys.up = true;
+	// 			break;
+	// 		case KEY_S:
+	// 			camera.keys.down = true;
+	// 			break;
+	// 		case KEY_A:
+	// 			camera.keys.left = true;
+	// 			break;
+	// 		case KEY_D:
+	// 			camera.keys.right = true;
+	// 			break;
+	// 		}
+	// 	}
+	//
+	// 	break;
+	// case WM_KEYUP:
+	// 	if (camera.firstperson)
+	// 	{
+	// 		switch (wParam)
+	// 		{
+	// 		case KEY_W:
+	// 			camera.keys.up = false;
+	// 			break;
+	// 		case KEY_S:
+	// 			camera.keys.down = false;
+	// 			break;
+	// 		case KEY_A:
+	// 			camera.keys.left = false;
+	// 			break;
+	// 		case KEY_D:
+	// 			camera.keys.right = false;
+	// 			break;
+	// 		}
+	// 	}
+	// 	break;
+	// case WM_LBUTTONDOWN:
+	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+	// 	mouseButtons.left = true;
+	// 	break;
+	// case WM_RBUTTONDOWN:
+	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+	// 	mouseButtons.right = true;
+	// 	break;
+	// case WM_MBUTTONDOWN:
+	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+	// 	mouseButtons.middle = true;
+	// 	break;
+	// case WM_LBUTTONUP:
+	// 	mouseButtons.left = false;
+	// 	break;
+	// case WM_RBUTTONUP:
+	// 	mouseButtons.right = false;
+	// 	break;
+	// case WM_MBUTTONUP:
+	// 	mouseButtons.middle = false;
+	// 	break;
+	// case WM_MOUSEWHEEL:
+	// {
+	// 	short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+	// 	camera.translate(glm::vec3(0.0f, 0.0f, -(float)wheelDelta * 0.005f * camera.movementSpeed));
+	// 	break;
+	// }
+	// case WM_MOUSEMOVE:
+	// {
+	// 	handleMouseMove(LOWORD(lParam), HIWORD(lParam));
+	// 	break;
+	// }
+	// case WM_SIZE:
+	// 	if ((prepared) && (wParam != SIZE_MINIMIZED)) {
+	// 		if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))) {
+	// 			destWidth = LOWORD(lParam);
+	// 			destHeight = HIWORD(lParam);
+	// 			windowResize();
+	// 		}
+	// 	}
+	// 	break;
+	// case WM_ENTERSIZEMOVE:
+	// 	resizing = true;
+	// 	break;
+	// case WM_EXITSIZEMOVE:
+	// 	resizing = false;
+	// 	break;
+	// case WM_DROPFILES:
+	// 	{
+	// 		std::string fname;
+	// 		HDROP hDrop = reinterpret_cast<HDROP>(wParam);
+	// 		// extract files here
+	// 		char filename[MAX_PATH];
+	// 		uint32_t count = DragQueryFileA(hDrop, -1, nullptr, 0);
+	// 		for (uint32_t i = 0; i < count; ++i) {
+	// 			if (DragQueryFileA(hDrop, i, filename, MAX_PATH)) {
+	// 				fname = filename;
+	// 			}
+	// 			break;
+	// 		}
+	// 		DragFinish(hDrop);
+	// 		fileDropped(fname);
+	// 		break;
+	// 	}
+	// }
+
+	return SDL_APP_CONTINUE;
 }
-#else
-#error More migration needed
-#endif
 
 void VulkanExampleBase::windowResized() {}
 
@@ -812,10 +912,10 @@ void VulkanExampleBase::setupFrameBuffer()
 		imageCI.samples = settings.sampleCount;
 		imageCI.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &multisampleTarget.color.image));
+		VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &imageCI, nullptr, &multisampleTarget.color.image));
 
 		VkMemoryRequirements memReqs;
-		vkGetImageMemoryRequirements(device, multisampleTarget.color.image, &memReqs);
+		vkGetImageMemoryRequirements(device_VULKAN, multisampleTarget.color.image, &memReqs);
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memAllocInfo.allocationSize = memReqs.size;
@@ -824,8 +924,8 @@ void VulkanExampleBase::setupFrameBuffer()
 		if (!lazyMemTypePresent) {
 			memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		}
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &multisampleTarget.color.memory));
-		vkBindImageMemory(device, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
+		VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &memAllocInfo, nullptr, &multisampleTarget.color.memory));
+		vkBindImageMemory(device_VULKAN, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
 
 		// Create image view for the MSAA target
 		VkImageViewCreateInfo imageViewCI{};
@@ -840,7 +940,7 @@ void VulkanExampleBase::setupFrameBuffer()
 		imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		imageViewCI.subresourceRange.levelCount = 1;
 		imageViewCI.subresourceRange.layerCount = 1;
-		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &multisampleTarget.color.view));
+		VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &imageViewCI, nullptr, &multisampleTarget.color.view));
 
 		// Depth target
 		imageCI.imageType = VK_IMAGE_TYPE_2D;
@@ -855,17 +955,17 @@ void VulkanExampleBase::setupFrameBuffer()
 		imageCI.samples = settings.sampleCount;
 		imageCI.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &multisampleTarget.depth.image));
+		VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &imageCI, nullptr, &multisampleTarget.depth.image));
 
-		vkGetImageMemoryRequirements(device, multisampleTarget.depth.image, &memReqs);
+		vkGetImageMemoryRequirements(device_VULKAN, multisampleTarget.depth.image, &memReqs);
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memAllocInfo.allocationSize = memReqs.size;
 		memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT, &lazyMemTypePresent);
 		if (!lazyMemTypePresent) {
 			memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		}
-		VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &multisampleTarget.depth.memory));
-		vkBindImageMemory(device, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
+		VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &memAllocInfo, nullptr, &multisampleTarget.depth.memory));
+		vkBindImageMemory(device_VULKAN, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
 
 		// Create image view for the MSAA target
 		imageViewCI.image = multisampleTarget.depth.image;
@@ -878,7 +978,7 @@ void VulkanExampleBase::setupFrameBuffer()
 		imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 		imageViewCI.subresourceRange.levelCount = 1;
 		imageViewCI.subresourceRange.layerCount = 1;
-		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &multisampleTarget.depth.view));
+		VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &imageViewCI, nullptr, &multisampleTarget.depth.view));
 	}
 
 
@@ -917,15 +1017,15 @@ void VulkanExampleBase::setupFrameBuffer()
 	depthStencilView.subresourceRange.layerCount = 1;
 
 	VkMemoryRequirements memReqs;
-	VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &depthStencil.image));
-	vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
+	VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &image, nullptr, &depthStencil.image));
+	vkGetImageMemoryRequirements(device_VULKAN, depthStencil.image, &memReqs);
 	mem_alloc.allocationSize = memReqs.size;
 	mem_alloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
-	VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
+	VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &mem_alloc, nullptr, &depthStencil.mem));
+	VK_CHECK_RESULT(vkBindImageMemory(device_VULKAN, depthStencil.image, depthStencil.mem, 0));
 
 	depthStencilView.image = depthStencil.image;
-	VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
+	VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &depthStencilView, nullptr, &depthStencil.view));
 
 	//
 
@@ -959,7 +1059,7 @@ void VulkanExampleBase::setupFrameBuffer()
 		else {
 			attachments[0] = swapChain.buffers[i].view;
 		}
-		VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCI, nullptr, &frameBuffers[i]));
+		VK_CHECK_RESULT(vkCreateFramebuffer(device_VULKAN, &frameBufferCI, nullptr, &frameBuffers[i]));
 	}
 }
 
@@ -970,26 +1070,26 @@ void VulkanExampleBase::windowResize()
 	}
 	prepared = false;
 
-	vkDeviceWaitIdle(device);
+	vkDeviceWaitIdle(device_VULKAN);
 	width = destWidth;
 	height = destHeight;
 	setupSwapChain();
 	if (settings.multiSampling) {
-		vkDestroyImageView(device, multisampleTarget.color.view, nullptr);
-		vkDestroyImage(device, multisampleTarget.color.image, nullptr);
-		vkFreeMemory(device, multisampleTarget.color.memory, nullptr);
-		vkDestroyImageView(device, multisampleTarget.depth.view, nullptr);
-		vkDestroyImage(device, multisampleTarget.depth.image, nullptr);
-		vkFreeMemory(device, multisampleTarget.depth.memory, nullptr);
+		vkDestroyImageView(device_VULKAN, multisampleTarget.color.view, nullptr);
+		vkDestroyImage(device_VULKAN, multisampleTarget.color.image, nullptr);
+		vkFreeMemory(device_VULKAN, multisampleTarget.color.memory, nullptr);
+		vkDestroyImageView(device_VULKAN, multisampleTarget.depth.view, nullptr);
+		vkDestroyImage(device_VULKAN, multisampleTarget.depth.image, nullptr);
+		vkFreeMemory(device_VULKAN, multisampleTarget.depth.memory, nullptr);
 	}
-	vkDestroyImageView(device, depthStencil.view, nullptr);
-	vkDestroyImage(device, depthStencil.image, nullptr);
-	vkFreeMemory(device, depthStencil.mem, nullptr);
+	vkDestroyImageView(device_VULKAN, depthStencil.view, nullptr);
+	vkDestroyImage(device_VULKAN, depthStencil.image, nullptr);
+	vkFreeMemory(device_VULKAN, depthStencil.mem, nullptr);
 	for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-		vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
+		vkDestroyFramebuffer(device_VULKAN, frameBuffers[i], nullptr);
 	}
 	setupFrameBuffer();
-	vkDeviceWaitIdle(device);
+	vkDeviceWaitIdle(device_VULKAN);
 
 	camera.updateAspectRatio((float)width / (float)height);
 	windowResized();
@@ -1026,7 +1126,7 @@ void VulkanExampleBase::handleMouseMove(int32_t x, int32_t y)
 void VulkanExampleBase::initSwapchain()
 {
 #if defined(_WIN32)
-	swapChain.initSurface(windowInstance, window);
+	swapChain.initSurface(windowInstance, window_WIN32);
 #else
 #error More migration needed
 #endif

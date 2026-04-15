@@ -39,6 +39,9 @@
 #include "VulkanDevice.hpp"
 #include "VulkanSwapChain.hpp"
 
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
+
 #include "imgui/imgui.h"
 
 class VulkanExampleBase
@@ -71,7 +74,8 @@ protected:
 	VkPhysicalDeviceProperties deviceProperties;
 	VkPhysicalDeviceFeatures deviceFeatures;
 	VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
-	VkDevice device;
+	SDL_GPUDevice* device;
+	VkDevice device_VULKAN; // PETEHUF_TODO: remove
 	vks::VulkanDevice *vulkanDevice;
 	VkQueue queue;
 	VkFormat depthFormat;
@@ -127,20 +131,12 @@ public:
 		bool middle = false;
 	} mouseButtons;
 
-	// OS specific 
-#if defined(_WIN32)
-	HWND window;
-	HINSTANCE windowInstance;
-#else
-#error More migration needed
-#endif
+	SDL_Window* window;
+	HWND window_WIN32; // PETEHUF_TODO: remove
+	HINSTANCE windowInstance; // PETEHUF_TODO: remove
 
-#if defined(_WIN32)
-	HWND setupWindow(HINSTANCE hinstance, WNDPROC wndproc);
-	void handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-#else
-#error More migration needed
-#endif
+	void setupWindow();
+	SDL_AppResult handleMessages(void* appstate, SDL_Event* event);
 
 	VulkanExampleBase();
 	virtual ~VulkanExampleBase();
