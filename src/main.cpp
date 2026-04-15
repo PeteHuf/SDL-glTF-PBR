@@ -225,8 +225,8 @@ public:
 		// textures.prefilteredCube.destroy();
 		// textures.lutBrdf.destroy();
 		// textures.empty.destroy();
-		//
-		// delete ui;
+
+		delete ui;
 	}
 
 	void resetCamera() {
@@ -1891,55 +1891,56 @@ public:
 
 	void prepare()
 	{
-		VulkanExampleBase::prepare();
+		// PETEHUF_TODO: impl
+		// VulkanExampleBase::prepare();
+		//
+		// camera.type = Camera::CameraType::lookat;
+		//
+		// camera.setPerspective(45.0f, (float)width / (float)height, 0.01f, 256.0f);
+		// camera.rotationSpeed = 0.25f;
+		// camera.movementSpeed = 0.1f;
+		// camera.setPosition({ 0.0f, 0.0f, 1.0f });
+		// camera.setRotation({ 0.0f, 0.0f, 0.0f });
+		//
+		// waitFences.resize(renderAhead);
+		// presentCompleteSemaphores.resize(swapChain.imageCount);
+		// renderCompleteSemaphores.resize(swapChain.imageCount);
+		// commandBuffers.resize(renderAhead);
+		// uniformBuffers.resize(renderAhead);
+		// descriptorSets.resize(renderAhead);
+		// shaderMeshDataBuffers.resize(renderAhead);
+		// descriptorSetsMeshData.resize(renderAhead);
+		// // Command buffer execution fences
+		// for (auto &waitFence : waitFences) {
+		// 	VkFenceCreateInfo fenceCI{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT };
+		// 	VK_CHECK_RESULT(vkCreateFence(device_VULKAN, &fenceCI, nullptr, &waitFence));
+		// }
+		// // Queue ordering semaphores
+		// for (auto &semaphore : presentCompleteSemaphores) {
+		// 	VkSemaphoreCreateInfo semaphoreCI{ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0 };
+		// 	VK_CHECK_RESULT(vkCreateSemaphore(device_VULKAN, &semaphoreCI, nullptr, &semaphore));
+		// }
+		// for (auto &semaphore : renderCompleteSemaphores) {
+		// 	VkSemaphoreCreateInfo semaphoreCI{ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0 };
+		// 	VK_CHECK_RESULT(vkCreateSemaphore(device_VULKAN, &semaphoreCI, nullptr, &semaphore));
+		// }
+		// // Command buffers
+		// {
+		// 	VkCommandBufferAllocateInfo cmdBufAllocateInfo{};
+		// 	cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		// 	cmdBufAllocateInfo.commandPool = cmdPool;
+		// 	cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		// 	cmdBufAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+		// 	VK_CHECK_RESULT(vkAllocateCommandBuffers(device_VULKAN, &cmdBufAllocateInfo, commandBuffers.data()));
+		// }
+		//
+		// loadAssets();
+		// generateBRDFLUT();
+		// prepareUniformBuffers();
+		// setupDescriptors();
+		// preparePipelines();
 
-		camera.type = Camera::CameraType::lookat;
-
-		camera.setPerspective(45.0f, (float)width / (float)height, 0.01f, 256.0f);
-		camera.rotationSpeed = 0.25f;
-		camera.movementSpeed = 0.1f;
-		camera.setPosition({ 0.0f, 0.0f, 1.0f });
-		camera.setRotation({ 0.0f, 0.0f, 0.0f });
-
-		waitFences.resize(renderAhead);
-		presentCompleteSemaphores.resize(swapChain.imageCount);
-		renderCompleteSemaphores.resize(swapChain.imageCount);
-		commandBuffers.resize(renderAhead);
-		uniformBuffers.resize(renderAhead);
-		descriptorSets.resize(renderAhead);
-		shaderMeshDataBuffers.resize(renderAhead);
-		descriptorSetsMeshData.resize(renderAhead);
-		// Command buffer execution fences
-		for (auto &waitFence : waitFences) {
-			VkFenceCreateInfo fenceCI{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, nullptr, VK_FENCE_CREATE_SIGNALED_BIT };
-			VK_CHECK_RESULT(vkCreateFence(device_VULKAN, &fenceCI, nullptr, &waitFence));
-		}
-		// Queue ordering semaphores
-		for (auto &semaphore : presentCompleteSemaphores) {
-			VkSemaphoreCreateInfo semaphoreCI{ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0 };
-			VK_CHECK_RESULT(vkCreateSemaphore(device_VULKAN, &semaphoreCI, nullptr, &semaphore));
-		}
-		for (auto &semaphore : renderCompleteSemaphores) {
-			VkSemaphoreCreateInfo semaphoreCI{ VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO, nullptr, 0 };
-			VK_CHECK_RESULT(vkCreateSemaphore(device_VULKAN, &semaphoreCI, nullptr, &semaphore));
-		}
-		// Command buffers
-		{
-			VkCommandBufferAllocateInfo cmdBufAllocateInfo{};
-			cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			cmdBufAllocateInfo.commandPool = cmdPool;
-			cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-			cmdBufAllocateInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-			VK_CHECK_RESULT(vkAllocateCommandBuffers(device_VULKAN, &cmdBufAllocateInfo, commandBuffers.data()));
-		}
-
-		loadAssets();
-		generateBRDFLUT();
-		prepareUniformBuffers();
-		setupDescriptors();
-		preparePipelines();
-
-		ui = new UI(vulkanDevice, renderPass, queue, pipelineCache, settings.sampleCount);
+		ui = new UI(device, window/*vulkanDevice, renderPass, queue, pipelineCache, settings.sampleCount*/);
 		updateOverlay();
 
 		prepared = true;
@@ -1950,166 +1951,250 @@ public:
 	*/
 	void updateOverlay()
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
+			SDL_Delay(10);
+			return;
+		}
 
-		ImVec2 lastDisplaySize = io.DisplaySize;
-		io.DisplaySize = ImVec2((float)width, (float)height);
-		io.DeltaTime = frameTimer;
+		const ImGuiIO& io = ImGui::GetIO();
 
-		io.MousePos = ImVec2(mousePos.x, mousePos.y);
-		io.MouseDown[0] = mouseButtons.left;
-		io.MouseDown[1] = mouseButtons.right;
-
-		ui->pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
-		ui->pushConstBlock.translate = glm::vec2(-1.0f);
-
-		float scale = 1.0f;
-
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-		scale = (float)vks::android::screenDensity / (float)ACONFIGURATION_DENSITY_MEDIUM;
-#endif
+		// Start the Dear ImGui frame
+		ImGui_ImplSDLGPU3_NewFrame();
+		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::SetNextWindowPos(ImVec2(10, 10));
-		ImGui::SetNextWindowSize(ImVec2(200 * scale, (models.scene.animations.size() > 0 ? 500 : 420) * scale), ImGuiSetCond_Always);
-		ImGui::Begin("Vulkan glTF 2.0 PBR", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-		ImGui::PushItemWidth(100.0f * scale);
+		static bool show_demo_window = true; // PETEHUF_TODO: hack
+		static bool show_another_window = false; // PETEHUF_TODO: hack
+		static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f); // PETEHUF_TODO: hack
 
-		ui->text("www.saschawillems.de");
-		ui->text("%.1d fps (%.2f ms)", lastFPS, (1000.0f / lastFPS));
-
-		if (ui->header("Scene")) {
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-			if (ui->combo("File", selectedScene, scenes)) {
-				vkDeviceWaitIdle(device_VULKAN);
-				loadScene(scenes[selectedScene]);
-				setupDescriptors();
-			}
-#else
-			if (ui->button("Open gltf file")) {
-				std::string filename = "";
-#if defined(_WIN32)
-				char buffer[MAX_PATH];
-				OPENFILENAME ofn;
-				ZeroMemory(&buffer, sizeof(buffer));
-				ZeroMemory(&ofn, sizeof(ofn));
-				ofn.lStructSize = sizeof(ofn);
-				ofn.lpstrFilter = "glTF files\0*.gltf;*.glb\0";
-				ofn.lpstrFile = buffer;
-				ofn.nMaxFile = MAX_PATH;
-				ofn.lpstrTitle = "Select a glTF file to load";
-				ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-				if (GetOpenFileNameA(&ofn)) {
-					filename = buffer;
-				}
-#else
-#error More migration needed
-#endif
-
-				if (!filename.empty()) {
-					vkDeviceWaitIdle(device_VULKAN);
-					loadScene(filename);
-					setupDescriptors();
-				}
-			}
-#endif
-			if (ui->combo("Environment##env", selectedEnvironment, environments)) {
-				vkDeviceWaitIdle(device_VULKAN);
-				loadEnvironment(environments[selectedEnvironment]);
-				setupDescriptors();
-			}
+		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+		if (show_demo_window) {
+			ImGui::ShowDemoWindow(&show_demo_window);
 		}
 
-		if (ui->header("Environment")) {
-			ui->checkbox("Background", &displayBackground);
-			ui->slider("Exposure", &shaderValuesParams.exposure, 0.1f, 10.0f);
-			ui->slider("Gamma", &shaderValuesParams.gamma, 0.1f, 4.0f);
-			ui->slider("IBL", &shaderValuesParams.scaleIBLAmbient, 0.0f, 1.0f);
+		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+		{
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");
+
+			ImGui::Text("This is some useful text.");
+			ImGui::Checkbox("Demo Window", &show_demo_window);
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+			ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color));
+
+			if (ImGui::Button("Button")) {
+				counter++;
+			}
+
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+			ImGui::End();
 		}
 
-		if (ui->header("Camera")) {
-			const std::vector<std::string> cameraTypes = { "Look at", "First Person" };
-			int32_t cameraTypeSelection = (int32_t)camera.type;
-			if (ui->combo("Type", &cameraTypeSelection, cameraTypes)) {
-				camera.type = (Camera::CameraType)cameraTypeSelection;
-				resetCamera();
+		// 3. Show another simple window.
+		if (show_another_window) {
+			ImGui::Begin("Another Window", &show_another_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me")) {
+				show_another_window = false;
 			}
+
+			ImGui::End();
 		}
 
-		if (ui->header("Debug view")) {
-			const std::vector<std::string> debugNamesInputs = {
-				"none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"
-			};
-			if (ui->combo("Inputs", &debugViewInputs, debugNamesInputs)) {
-				shaderValuesParams.debugViewInputs = static_cast<float>(debugViewInputs);
-			}
-			const std::vector<std::string> debugNamesEquation = {
-				"none", "Diff (l,n)", "F (l,h)", "G (l,v,h)", "D (h)", "Specular"
-			};
-			if (ui->combo("PBR equation", &debugViewEquation, debugNamesEquation)) {
-				shaderValuesParams.debugViewEquation = static_cast<float>(debugViewEquation);
-			}
-		}
-
-		if (models.scene.animations.size() > 0) {
-			if (ui->header("Animations")) {
-				ui->checkbox("Animate", &animate);
-				std::vector<std::string> animationNames;
-				for (auto animation : models.scene.animations) {
-					animationNames.push_back(animation.name);
-				}
-				ui->combo("Animation", &animationIndex, animationNames);
-			}
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::End();
+		// Rendering
 		ImGui::Render();
+		ImDrawData* draw_data = ImGui::GetDrawData();
+		const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 
-		ImDrawData* imDrawData = ImGui::GetDrawData();
+		SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(device); // Acquire a GPU command buffer
 
-		// Check if ui buffers need to be recreated
-		if (imDrawData) {
-			VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
-			VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
+		SDL_GPUTexture* swapchain_texture;
+		SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain_texture, nullptr, nullptr); // Acquire a swapchain texture
 
-			bool updateBuffers = (ui->vertexBuffer.buffer == VK_NULL_HANDLE) || (ui->vertexBuffer.count != imDrawData->TotalVtxCount) || (ui->indexBuffer.buffer == VK_NULL_HANDLE) || (ui->indexBuffer.count != imDrawData->TotalIdxCount);
+		if (swapchain_texture != nullptr && !is_minimized) {
+			// This is mandatory: call ImGui_ImplSDLGPU3_PrepareDrawData() to upload the vertex/index buffer!
+			ImGui_ImplSDLGPU3_PrepareDrawData(draw_data, command_buffer);
 
-			if (updateBuffers) {
-				vkDeviceWaitIdle(device_VULKAN);
-				if (ui->vertexBuffer.buffer) {
-					ui->vertexBuffer.destroy();
-				}
-				ui->vertexBuffer.create(vulkanDevice, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBufferSize);
-				ui->vertexBuffer.count = imDrawData->TotalVtxCount;
-				if (ui->indexBuffer.buffer) {
-					ui->indexBuffer.destroy();
-				}
-				ui->indexBuffer.create(vulkanDevice, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, indexBufferSize);
-				ui->indexBuffer.count = imDrawData->TotalIdxCount;
-			}
+			// Setup and start a render pass
+			SDL_GPUColorTargetInfo target_info = {};
+			target_info.texture = swapchain_texture;
+			target_info.clear_color = SDL_FColor{clear_color.x, clear_color.y, clear_color.z, clear_color.w};
+			target_info.load_op = SDL_GPU_LOADOP_CLEAR;
+			target_info.store_op = SDL_GPU_STOREOP_STORE;
+			target_info.mip_level = 0;
+			target_info.layer_or_depth_plane = 0;
+			target_info.cycle = false;
+			SDL_GPURenderPass* render_pass = SDL_BeginGPURenderPass(command_buffer, &target_info, 1, nullptr);
 
-			// Upload data
-			ImDrawVert* vtxDst = (ImDrawVert*)ui->vertexBuffer.mapped;
-			ImDrawIdx* idxDst = (ImDrawIdx*)ui->indexBuffer.mapped;
-			for (int n = 0; n < imDrawData->CmdListsCount; n++) {
-				const ImDrawList* cmd_list = imDrawData->CmdLists[n];
-				memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-				memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-				vtxDst += cmd_list->VtxBuffer.Size;
-				idxDst += cmd_list->IdxBuffer.Size;
-			}
+			// Render ImGui
+			ImGui_ImplSDLGPU3_RenderDrawData(draw_data, command_buffer, render_pass);
 
-			ui->vertexBuffer.flush();
-			ui->indexBuffer.flush();
-
+			SDL_EndGPURenderPass(render_pass);
 		}
 
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-		if (mouseButtons.left) {
-			mouseButtons.left = false;
-		}
-#endif
+		// Submit the command buffer
+		SDL_SubmitGPUCommandBuffer(command_buffer);
+
+
+
+		// PETEHUF_TODO: impl
+// 		ImGuiIO& io = ImGui::GetIO();
+//
+// 		ImVec2 lastDisplaySize = io.DisplaySize;
+// 		io.DisplaySize = ImVec2((float)width, (float)height);
+// 		io.DeltaTime = frameTimer;
+//
+// 		io.MousePos = ImVec2(mousePos.x, mousePos.y);
+// 		io.MouseDown[0] = mouseButtons.left;
+// 		io.MouseDown[1] = mouseButtons.right;
+//
+// 		ui->pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
+// 		ui->pushConstBlock.translate = glm::vec2(-1.0f);
+//
+// 		float scale = 1.0f;
+//
+// 		ImGui::NewFrame();
+//
+// 		ImGui::SetNextWindowPos(ImVec2(10, 10));
+// 		ImGui::SetNextWindowSize(ImVec2(200 * scale, (models.scene.animations.size() > 0 ? 500 : 420) * scale), ImGuiSetCond_Always);
+// 		ImGui::Begin("Vulkan glTF 2.0 PBR", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+// 		ImGui::PushItemWidth(100.0f * scale);
+//
+// 		ui->text("www.saschawillems.de");
+// 		ui->text("%.1d fps (%.2f ms)", lastFPS, (1000.0f / lastFPS));
+//
+// 		if (ui->header("Scene")) {
+// 			if (ui->button("Open gltf file")) {
+// 				std::string filename = "";
+// #if defined(_WIN32)
+// 				char buffer[MAX_PATH];
+// 				OPENFILENAME ofn;
+// 				ZeroMemory(&buffer, sizeof(buffer));
+// 				ZeroMemory(&ofn, sizeof(ofn));
+// 				ofn.lStructSize = sizeof(ofn);
+// 				ofn.lpstrFilter = "glTF files\0*.gltf;*.glb\0";
+// 				ofn.lpstrFile = buffer;
+// 				ofn.nMaxFile = MAX_PATH;
+// 				ofn.lpstrTitle = "Select a glTF file to load";
+// 				ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+// 				if (GetOpenFileNameA(&ofn)) {
+// 					filename = buffer;
+// 				}
+// #else
+// #error More migration needed
+// #endif
+//
+// 				if (!filename.empty()) {
+// 					vkDeviceWaitIdle(device_VULKAN);
+// 					loadScene(filename);
+// 					setupDescriptors();
+// 				}
+// 			}
+//
+// 			if (ui->combo("Environment##env", selectedEnvironment, environments)) {
+// 				vkDeviceWaitIdle(device_VULKAN);
+// 				loadEnvironment(environments[selectedEnvironment]);
+// 				setupDescriptors();
+// 			}
+// 		}
+//
+// 		if (ui->header("Environment")) {
+// 			ui->checkbox("Background", &displayBackground);
+// 			ui->slider("Exposure", &shaderValuesParams.exposure, 0.1f, 10.0f);
+// 			ui->slider("Gamma", &shaderValuesParams.gamma, 0.1f, 4.0f);
+// 			ui->slider("IBL", &shaderValuesParams.scaleIBLAmbient, 0.0f, 1.0f);
+// 		}
+//
+// 		if (ui->header("Camera")) {
+// 			const std::vector<std::string> cameraTypes = { "Look at", "First Person" };
+// 			int32_t cameraTypeSelection = (int32_t)camera.type;
+// 			if (ui->combo("Type", &cameraTypeSelection, cameraTypes)) {
+// 				camera.type = (Camera::CameraType)cameraTypeSelection;
+// 				resetCamera();
+// 			}
+// 		}
+//
+// 		if (ui->header("Debug view")) {
+// 			const std::vector<std::string> debugNamesInputs = {
+// 				"none", "Base color", "Normal", "Occlusion", "Emissive", "Metallic", "Roughness"
+// 			};
+// 			if (ui->combo("Inputs", &debugViewInputs, debugNamesInputs)) {
+// 				shaderValuesParams.debugViewInputs = static_cast<float>(debugViewInputs);
+// 			}
+// 			const std::vector<std::string> debugNamesEquation = {
+// 				"none", "Diff (l,n)", "F (l,h)", "G (l,v,h)", "D (h)", "Specular"
+// 			};
+// 			if (ui->combo("PBR equation", &debugViewEquation, debugNamesEquation)) {
+// 				shaderValuesParams.debugViewEquation = static_cast<float>(debugViewEquation);
+// 			}
+// 		}
+//
+// 		if (models.scene.animations.size() > 0) {
+// 			if (ui->header("Animations")) {
+// 				ui->checkbox("Animate", &animate);
+// 				std::vector<std::string> animationNames;
+// 				for (auto animation : models.scene.animations) {
+// 					animationNames.push_back(animation.name);
+// 				}
+// 				ui->combo("Animation", &animationIndex, animationNames);
+// 			}
+// 		}
+//
+// 		ImGui::PopItemWidth();
+// 		ImGui::End();
+// 		ImGui::Render();
+//
+// 		ImDrawData* imDrawData = ImGui::GetDrawData();
+//
+// 		// Check if ui buffers need to be recreated
+// 		if (imDrawData) {
+// 			VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
+// 			VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
+//
+// 			bool updateBuffers = (ui->vertexBuffer.buffer == VK_NULL_HANDLE) || (ui->vertexBuffer.count != imDrawData->TotalVtxCount) || (ui->indexBuffer.buffer == VK_NULL_HANDLE) || (ui->indexBuffer.count != imDrawData->TotalIdxCount);
+//
+// 			if (updateBuffers) {
+// 				vkDeviceWaitIdle(device_VULKAN);
+// 				if (ui->vertexBuffer.buffer) {
+// 					ui->vertexBuffer.destroy();
+// 				}
+// 				ui->vertexBuffer.create(vulkanDevice, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, vertexBufferSize);
+// 				ui->vertexBuffer.count = imDrawData->TotalVtxCount;
+// 				if (ui->indexBuffer.buffer) {
+// 					ui->indexBuffer.destroy();
+// 				}
+// 				ui->indexBuffer.create(vulkanDevice, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, indexBufferSize);
+// 				ui->indexBuffer.count = imDrawData->TotalIdxCount;
+// 			}
+//
+// 			// Upload data
+// 			ImDrawVert* vtxDst = (ImDrawVert*)ui->vertexBuffer.mapped;
+// 			ImDrawIdx* idxDst = (ImDrawIdx*)ui->indexBuffer.mapped;
+// 			for (int n = 0; n < imDrawData->CmdListsCount; n++) {
+// 				const ImDrawList* cmd_list = imDrawData->CmdLists[n];
+// 				memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+// 				memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+// 				vtxDst += cmd_list->VtxBuffer.Size;
+// 				idxDst += cmd_list->IdxBuffer.Size;
+// 			}
+//
+// 			ui->vertexBuffer.flush();
+// 			ui->indexBuffer.flush();
+//
+// 		}
+//
+// #if defined(VK_USE_PLATFORM_ANDROID_KHR)
+// 		if (mouseButtons.left) {
+// 			mouseButtons.left = false;
+// 		}
+// #endif
 	}
 
 	virtual void render()
@@ -2119,77 +2204,66 @@ public:
 		}
 
 		ui->updateTimer -= frameTimer;
-		if (ui->updateTimer <= 0.0f) {
+		//if (ui->updateTimer <= 0.0f) { // PETEHUF_TODO: eval
 			updateOverlay();
 			ui->updateTimer = 1.0f / 60.0f;
-		}
+		//}
 
-#if defined(VK_USE_PLATFORM_MACOS_MVK)
-		// Need this for smooth imgui controls
-		updateOverlay();
-		// Must load file here in render loop
-		if (!gltfFileName.empty()) {
-			vkDeviceWaitIdle(device_VULKAN);
-			loadScene(gltfFileName);
-			setupDescriptors();
-			gltfFileName = "";
-		}
-#endif
-
-		VK_CHECK_RESULT(vkWaitForFences(device_VULKAN, 1, &waitFences[frameIndex], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT(vkResetFences(device_VULKAN, 1, &waitFences[frameIndex]));
-
-		VkResult acquire = swapChain.acquireNextImage(presentCompleteSemaphores[frameIndex], &imageIndex);
-		if ((acquire == VK_ERROR_OUT_OF_DATE_KHR) || (acquire == VK_SUBOPTIMAL_KHR)) {
-			windowResize();
-		}
-		else {
-			VK_CHECK_RESULT(acquire);
-		}
-
-		recordCommandBuffer();
-
-		// Update UBOs
-		updateUniformData();
-		UniformBufferSet currentUB = uniformBuffers[frameIndex];
-		memcpy(currentUB.scene.mapped, &shaderValuesScene, sizeof(shaderValuesScene));
-		memcpy(currentUB.params.mapped, &shaderValuesParams, sizeof(shaderValuesParams));
-		memcpy(currentUB.skybox.mapped, &shaderValuesSkybox, sizeof(shaderValuesSkybox));
-
-		const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		submitInfo.pWaitDstStageMask = &waitDstStageMask;
-		submitInfo.pWaitSemaphores = &presentCompleteSemaphores[frameIndex];
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &renderCompleteSemaphores[imageIndex];
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pCommandBuffers = &commandBuffers[frameIndex];
-		submitInfo.commandBufferCount = 1;
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, waitFences[frameIndex]));
-
-		VkResult present = swapChain.queuePresent(queue, imageIndex, renderCompleteSemaphores[imageIndex]);
-		if (!((present == VK_SUCCESS) || (present == VK_SUBOPTIMAL_KHR))) {
-			if (present == VK_ERROR_OUT_OF_DATE_KHR) {
-				windowResize();
-				return;
-			}
-			else {
-				VK_CHECK_RESULT(present);
-			}
-		}
-
-		if (!paused) {
-			if ((animate) && (models.scene.animations.size() > 0)) {
-				animationTimer += frameTimer;
-				if (animationTimer > models.scene.animations[animationIndex].end) {
-					animationTimer -= models.scene.animations[animationIndex].end;
-				}
-				models.scene.updateAnimation(animationIndex, animationTimer);
-				updateMeshDataBuffer(frameIndex);
-			}
-			updateParams();
-		}
+		// PETEHUF_TODO: impl
+		// VK_CHECK_RESULT(vkWaitForFences(device_VULKAN, 1, &waitFences[frameIndex], VK_TRUE, UINT64_MAX));
+		// VK_CHECK_RESULT(vkResetFences(device_VULKAN, 1, &waitFences[frameIndex]));
+		//
+		// VkResult acquire = swapChain.acquireNextImage(presentCompleteSemaphores[frameIndex], &imageIndex);
+		// if ((acquire == VK_ERROR_OUT_OF_DATE_KHR) || (acquire == VK_SUBOPTIMAL_KHR)) {
+		// 	windowResize();
+		// }
+		// else {
+		// 	VK_CHECK_RESULT(acquire);
+		// }
+		//
+		// recordCommandBuffer();
+		//
+		// // Update UBOs
+		// updateUniformData();
+		// UniformBufferSet currentUB = uniformBuffers[frameIndex];
+		// memcpy(currentUB.scene.mapped, &shaderValuesScene, sizeof(shaderValuesScene));
+		// memcpy(currentUB.params.mapped, &shaderValuesParams, sizeof(shaderValuesParams));
+		// memcpy(currentUB.skybox.mapped, &shaderValuesSkybox, sizeof(shaderValuesSkybox));
+		//
+		// const VkPipelineStageFlags waitDstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		// VkSubmitInfo submitInfo{};
+		// submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		// submitInfo.pWaitDstStageMask = &waitDstStageMask;
+		// submitInfo.pWaitSemaphores = &presentCompleteSemaphores[frameIndex];
+		// submitInfo.waitSemaphoreCount = 1;
+		// submitInfo.pSignalSemaphores = &renderCompleteSemaphores[imageIndex];
+		// submitInfo.signalSemaphoreCount = 1;
+		// submitInfo.pCommandBuffers = &commandBuffers[frameIndex];
+		// submitInfo.commandBufferCount = 1;
+		// VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, waitFences[frameIndex]));
+		//
+		// VkResult present = swapChain.queuePresent(queue, imageIndex, renderCompleteSemaphores[imageIndex]);
+		// if (!((present == VK_SUCCESS) || (present == VK_SUBOPTIMAL_KHR))) {
+		// 	if (present == VK_ERROR_OUT_OF_DATE_KHR) {
+		// 		windowResize();
+		// 		return;
+		// 	}
+		// 	else {
+		// 		VK_CHECK_RESULT(present);
+		// 	}
+		// }
+		//
+		// if (!paused) {
+		// 	if ((animate) && (models.scene.animations.size() > 0)) {
+		// 		animationTimer += frameTimer;
+		// 		if (animationTimer > models.scene.animations[animationIndex].end) {
+		// 			animationTimer -= models.scene.animations[animationIndex].end;
+		// 		}
+		// 		models.scene.updateAnimation(animationIndex, animationTimer);
+		// 		updateMeshDataBuffer(frameIndex);
+		// 	}
+		// 	updateParams();
+		// }
 
 		frameIndex = (frameIndex + 1) % renderAhead;
 	}
@@ -2213,7 +2287,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) // PETEHUF_TO
 
 	vulkanApplication->setupWindow();
 	vulkanApplication->initVulkan();
-	vulkanApplication->prepare(); // PETEHUF_TODO: putback
+	vulkanApplication->prepare();
 
 	return SDL_APP_CONTINUE;
 }
@@ -2237,7 +2311,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
 {
 	VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
 
-	vulkanApplication->renderLoop();
+	vulkanApplication->renderFrame();
 	return SDL_APP_CONTINUE;
 }
 

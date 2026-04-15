@@ -14,8 +14,49 @@ include_directories(external/basisu/transcoder)
 include_directories(external/basisu/zstd)
 include_directories(base)
 
-#add_subdirectory(external/sdl)
-add_subdirectory(external/imgui)
+add_subdirectory(external/sdl)
+
+set(IMGUI_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+
+add_library(ImGui STATIC)
+
+#target_include_directories( # PETEHUF_TODO: cleanup
+#	ImGui
+#	PUBLIC
+#	${CMAKE_CURRENT_SOURCE_DIR}
+#)
+
+message(${IMGUI_ROOT})
+
+target_link_libraries(
+	ImGui
+	PUBLIC
+	SDL3::SDL3
+)
+target_include_directories(
+	ImGui
+	PUBLIC
+	${IMGUI_ROOT}
+	${IMGUI_ROOT}/backends
+)
+target_sources(
+	ImGui
+	PRIVATE
+	${IMGUI_ROOT}/imconfig.h
+	${IMGUI_ROOT}/imgui.cpp ${IMGUI_ROOT}/imgui.h
+	${IMGUI_ROOT}/imgui_demo.cpp
+	${IMGUI_ROOT}/imgui_draw.cpp
+	${IMGUI_ROOT}/imgui_internal.h
+	${IMGUI_ROOT}/imgui_tables.cpp
+	${IMGUI_ROOT}/imgui_widgets.cpp
+	${IMGUI_ROOT}/imstb_rectpack.h
+	${IMGUI_ROOT}/imstb_textedit.h
+	${IMGUI_ROOT}/imstb_truetype.h
+	${IMGUI_ROOT}/backends/imgui_impl_sdl3.cpp ${IMGUI_ROOT}/backends/imgui_impl_sdl3.h
+	${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3.cpp ${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3.h
+	${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3_shaders.h
+)
+
 
 OPTION(USE_D2D_WSI "Build the project using Direct to Display swapchain" OFF)
 OPTION(USE_WAYLAND_WSI "Build the project using Wayland swapchain" OFF)

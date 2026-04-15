@@ -11,7 +11,7 @@ set(BASISU_SOURCES
 add_library(base STATIC ${BASE_SRC} ${BASE_HEADERS} ${BASISU_SOURCES})
 
 if(WIN32)
-    target_link_libraries(base ${Vulkan_LIBRARY} ${WINLIBS} ${DRACO_DECODER_LIBRARY} SDL3::SDL3)
+    target_link_libraries(base ${Vulkan_LIBRARY} ${WINLIBS} ${DRACO_DECODER_LIBRARY} SDL3::SDL3 ImGui)
  else(WIN32)
-    target_link_libraries(base ${Vulkan_LIBRARY} ${XCB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${DRACO_DECODER_LIBRARY} SDL3::SDL3)
+    target_link_libraries(base ${Vulkan_LIBRARY} ${XCB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${DRACO_DECODER_LIBRARY} SDL3::SDL3 ImGui)
 endif(WIN32)

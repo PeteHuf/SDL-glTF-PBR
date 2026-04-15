@@ -26,7 +26,8 @@
 
 struct UI {
 private:
-	VkDevice device;
+	SDL_GPUDevice* device;
+	VkDevice device_VULKAN;
 public:
 	Buffer vertexBuffer, indexBuffer;
 	vks::Texture2D fontTexture;
@@ -43,6 +44,8 @@ public:
 	} pushConstBlock;
 
 	UI(SDL_GPUDevice* device, SDL_Window* window/*vks::VulkanDevice *vulkanDevice, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
+		this->device = device;
+
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
@@ -56,6 +59,7 @@ public:
 		//ImGui::StyleColorsLight();
 
 		// Setup scaling
+		const float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
 		style.FontScaleDpi = main_scale; // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
@@ -70,206 +74,212 @@ public:
 		init_info.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
 		ImGui_ImplSDLGPU3_Init(&init_info);
 
-
-		this->device = vulkanDevice->logicalDevice;
-
-		ImGui::CreateContext();
-
-		/*
-			Font texture loading
-		*/
-		ImGuiIO& io = ImGui::GetIO();
-		unsigned char* fontData;
-		int texWidth, texHeight;
-
-#if defined(__ANDROID__)
-		float scale = (float)vks::android::screenDensity / (float)ACONFIGURATION_DENSITY_MEDIUM;
-		AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, "Roboto-Medium.ttf", AASSET_MODE_STREAMING);
-		assert(asset);
-		size_t size = AAsset_getLength(asset);
-		assert(size > 0);
-		char *fontAsset = new char[size];
-		AAsset_read(asset, fontAsset, size);
-		AAsset_close(asset);
-		io.Fonts->AddFontFromMemoryTTF(fontAsset, size, 14.0f * scale);
-		delete[] fontAsset;
-#else
-		io.Fonts->AddFontFromFileTTF("./../data/Roboto-Medium.ttf", 16.0f);
-#endif
-		io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
-		fontTexture.loadFromBuffer(fontData, texWidth * texHeight * 4 * sizeof(char), VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, vulkanDevice, queue);
-
-		/*
-			Setup
-		*/
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.FrameBorderSize = 0.0f;
-		style.WindowBorderSize = 0.0f;
-
-		/*
-			Descriptor pool
-		*/
-		std::vector<VkDescriptorPoolSize> poolSizes = {
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 }
-		};
-		VkDescriptorPoolCreateInfo descriptorPoolCI{};
-		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		descriptorPoolCI.poolSizeCount = 1;
-		descriptorPoolCI.pPoolSizes = poolSizes.data();
-		descriptorPoolCI.maxSets = 1;
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCI, nullptr, &descriptorPool));
-
-		/*
-			Descriptor set layout
-		*/
-		VkDescriptorSetLayoutBinding setLayoutBinding{ 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr };
-		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI{};
-		descriptorSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorSetLayoutCI.pBindings = &setLayoutBinding;
-		descriptorSetLayoutCI.bindingCount = 1;
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCI, nullptr, &descriptorSetLayout));
-
-		/*
-			Descriptor set
-		*/
-		VkDescriptorSetAllocateInfo descriptorSetAllocInfo{};
-		descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		descriptorSetAllocInfo.descriptorPool = descriptorPool;
-		descriptorSetAllocInfo.pSetLayouts = &descriptorSetLayout;
-		descriptorSetAllocInfo.descriptorSetCount = 1;
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocInfo, &descriptorSet));
-		VkWriteDescriptorSet writeDescriptorSet{};
-		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSet.descriptorCount = 1;
-		writeDescriptorSet.dstSet = descriptorSet;
-		writeDescriptorSet.dstBinding = 0;
-		writeDescriptorSet.pImageInfo = &fontTexture.descriptor;
-		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
-
-		/*
-			Pipeline layout
-		*/
-		VkPushConstantRange pushConstantRange{ VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock) };
-
-		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
-		pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutCI.pushConstantRangeCount = 1;
-		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
-		pipelineLayoutCI.setLayoutCount = 1;
-		pipelineLayoutCI.pSetLayouts = &descriptorSetLayout;
-		pipelineLayoutCI.pushConstantRangeCount = 1;
-		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
-		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCI, nullptr, &pipelineLayout));
-
-		/*
-			Pipeline
-		*/
-		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCI{};
-		inputAssemblyStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-		inputAssemblyStateCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-		VkPipelineRasterizationStateCreateInfo rasterizationStateCI{};
-		rasterizationStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-		rasterizationStateCI.polygonMode = VK_POLYGON_MODE_FILL;
-		rasterizationStateCI.cullMode = VK_CULL_MODE_NONE;
-		rasterizationStateCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		rasterizationStateCI.lineWidth = 1.0f;
-
-		VkPipelineColorBlendAttachmentState blendAttachmentState{};
-		blendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-		blendAttachmentState.blendEnable = VK_TRUE;
-		blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-		blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		blendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
-		blendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-		blendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-		blendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-
-		VkPipelineColorBlendStateCreateInfo colorBlendStateCI{};
-		colorBlendStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-		colorBlendStateCI.attachmentCount = 1;
-		colorBlendStateCI.pAttachments = &blendAttachmentState;
-
-		VkPipelineDepthStencilStateCreateInfo depthStencilStateCI{};
-		depthStencilStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-		depthStencilStateCI.depthTestEnable = VK_FALSE;
-		depthStencilStateCI.depthWriteEnable = VK_FALSE;
-		depthStencilStateCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-		depthStencilStateCI.front = depthStencilStateCI.back;
-		depthStencilStateCI.back.compareOp = VK_COMPARE_OP_ALWAYS;
-
-		VkPipelineViewportStateCreateInfo viewportStateCI{};
-		viewportStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-		viewportStateCI.viewportCount = 1;
-		viewportStateCI.scissorCount = 1;
-
-		VkPipelineMultisampleStateCreateInfo multisampleStateCI{};
-		multisampleStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-
-		if (multiSampleCount > VK_SAMPLE_COUNT_1_BIT) {
-			multisampleStateCI.rasterizationSamples = multiSampleCount;
-		}
-
-		std::vector<VkDynamicState> dynamicStateEnables = {
-			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
-		};
-		VkPipelineDynamicStateCreateInfo dynamicStateCI{};
-		dynamicStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamicStateCI.pDynamicStates = dynamicStateEnables.data();
-		dynamicStateCI.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
-
-		VkVertexInputBindingDescription vertexInputBinding = { 0, 20, VK_VERTEX_INPUT_RATE_VERTEX };
-		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
-			{ 0, 0, VK_FORMAT_R32G32_SFLOAT, 0 },
-			{ 1, 0, VK_FORMAT_R32G32_SFLOAT, sizeof(float) * 2 },
-			{ 2, 0, VK_FORMAT_R8G8B8A8_UNORM, sizeof(float) * 4 },
-		};
-		VkPipelineVertexInputStateCreateInfo vertexInputStateCI{};
-		vertexInputStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputStateCI.vertexBindingDescriptionCount = 1;
-		vertexInputStateCI.pVertexBindingDescriptions = &vertexInputBinding;
-		vertexInputStateCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
-		vertexInputStateCI.pVertexAttributeDescriptions = vertexInputAttributes.data();
-
-		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-
-		VkGraphicsPipelineCreateInfo pipelineCI{};
-		pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipelineCI.layout = pipelineLayout;
-		pipelineCI.renderPass = renderPass;
-		pipelineCI.pInputAssemblyState = &inputAssemblyStateCI;
-		pipelineCI.pVertexInputState = &vertexInputStateCI;
-		pipelineCI.pRasterizationState = &rasterizationStateCI;
-		pipelineCI.pColorBlendState = &colorBlendStateCI;
-		pipelineCI.pMultisampleState = &multisampleStateCI;
-		pipelineCI.pViewportState = &viewportStateCI;
-		pipelineCI.pDepthStencilState = &depthStencilStateCI;
-		pipelineCI.pDynamicState = &dynamicStateCI;
-		pipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
-		pipelineCI.pStages = shaderStages.data();
-
-		pipelineCI.layout = pipelineLayout;
-		shaderStages = {
-			loadShader(device, "ui.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
-			loadShader(device, "ui.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
-		};
-		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &pipeline));
-
-		for (auto shaderStage : shaderStages) {
-			vkDestroyShaderModule(device, shaderStage.module, nullptr);
-		}
+// PETEHUF_TODO: impl
+// 		this->device = vulkanDevice->logicalDevice;
+//
+// 		ImGui::CreateContext();
+//
+// 		/*
+// 			Font texture loading
+// 		*/
+// 		ImGuiIO& io = ImGui::GetIO();
+// 		unsigned char* fontData;
+// 		int texWidth, texHeight;
+//
+// #if defined(__ANDROID__)
+// 		float scale = (float)vks::android::screenDensity / (float)ACONFIGURATION_DENSITY_MEDIUM;
+// 		AAsset* asset = AAssetManager_open(androidApp->activity->assetManager, "Roboto-Medium.ttf", AASSET_MODE_STREAMING);
+// 		assert(asset);
+// 		size_t size = AAsset_getLength(asset);
+// 		assert(size > 0);
+// 		char *fontAsset = new char[size];
+// 		AAsset_read(asset, fontAsset, size);
+// 		AAsset_close(asset);
+// 		io.Fonts->AddFontFromMemoryTTF(fontAsset, size, 14.0f * scale);
+// 		delete[] fontAsset;
+// #else
+// 		io.Fonts->AddFontFromFileTTF("./../data/Roboto-Medium.ttf", 16.0f);
+// #endif
+// 		io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+// 		fontTexture.loadFromBuffer(fontData, texWidth * texHeight * 4 * sizeof(char), VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, vulkanDevice, queue);
+//
+// 		/*
+// 			Setup
+// 		*/
+// 		ImGuiStyle& style = ImGui::GetStyle();
+// 		style.FrameBorderSize = 0.0f;
+// 		style.WindowBorderSize = 0.0f;
+//
+// 		/*
+// 			Descriptor pool
+// 		*/
+// 		std::vector<VkDescriptorPoolSize> poolSizes = {
+// 			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 }
+// 		};
+// 		VkDescriptorPoolCreateInfo descriptorPoolCI{};
+// 		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+// 		descriptorPoolCI.poolSizeCount = 1;
+// 		descriptorPoolCI.pPoolSizes = poolSizes.data();
+// 		descriptorPoolCI.maxSets = 1;
+// 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolCI, nullptr, &descriptorPool));
+//
+// 		/*
+// 			Descriptor set layout
+// 		*/
+// 		VkDescriptorSetLayoutBinding setLayoutBinding{ 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr };
+// 		VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCI{};
+// 		descriptorSetLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+// 		descriptorSetLayoutCI.pBindings = &setLayoutBinding;
+// 		descriptorSetLayoutCI.bindingCount = 1;
+// 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCI, nullptr, &descriptorSetLayout));
+//
+// 		/*
+// 			Descriptor set
+// 		*/
+// 		VkDescriptorSetAllocateInfo descriptorSetAllocInfo{};
+// 		descriptorSetAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+// 		descriptorSetAllocInfo.descriptorPool = descriptorPool;
+// 		descriptorSetAllocInfo.pSetLayouts = &descriptorSetLayout;
+// 		descriptorSetAllocInfo.descriptorSetCount = 1;
+// 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &descriptorSetAllocInfo, &descriptorSet));
+// 		VkWriteDescriptorSet writeDescriptorSet{};
+// 		writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+// 		writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+// 		writeDescriptorSet.descriptorCount = 1;
+// 		writeDescriptorSet.dstSet = descriptorSet;
+// 		writeDescriptorSet.dstBinding = 0;
+// 		writeDescriptorSet.pImageInfo = &fontTexture.descriptor;
+// 		vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+//
+// 		/*
+// 			Pipeline layout
+// 		*/
+// 		VkPushConstantRange pushConstantRange{ VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock) };
+//
+// 		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
+// 		pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+// 		pipelineLayoutCI.pushConstantRangeCount = 1;
+// 		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+// 		pipelineLayoutCI.setLayoutCount = 1;
+// 		pipelineLayoutCI.pSetLayouts = &descriptorSetLayout;
+// 		pipelineLayoutCI.pushConstantRangeCount = 1;
+// 		pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
+// 		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCI, nullptr, &pipelineLayout));
+//
+// 		/*
+// 			Pipeline
+// 		*/
+// 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCI{};
+// 		inputAssemblyStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+// 		inputAssemblyStateCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+//
+// 		VkPipelineRasterizationStateCreateInfo rasterizationStateCI{};
+// 		rasterizationStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+// 		rasterizationStateCI.polygonMode = VK_POLYGON_MODE_FILL;
+// 		rasterizationStateCI.cullMode = VK_CULL_MODE_NONE;
+// 		rasterizationStateCI.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+// 		rasterizationStateCI.lineWidth = 1.0f;
+//
+// 		VkPipelineColorBlendAttachmentState blendAttachmentState{};
+// 		blendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+// 		blendAttachmentState.blendEnable = VK_TRUE;
+// 		blendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+// 		blendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+// 		blendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
+// 		blendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+// 		blendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+// 		blendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
+//
+// 		VkPipelineColorBlendStateCreateInfo colorBlendStateCI{};
+// 		colorBlendStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+// 		colorBlendStateCI.attachmentCount = 1;
+// 		colorBlendStateCI.pAttachments = &blendAttachmentState;
+//
+// 		VkPipelineDepthStencilStateCreateInfo depthStencilStateCI{};
+// 		depthStencilStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+// 		depthStencilStateCI.depthTestEnable = VK_FALSE;
+// 		depthStencilStateCI.depthWriteEnable = VK_FALSE;
+// 		depthStencilStateCI.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+// 		depthStencilStateCI.front = depthStencilStateCI.back;
+// 		depthStencilStateCI.back.compareOp = VK_COMPARE_OP_ALWAYS;
+//
+// 		VkPipelineViewportStateCreateInfo viewportStateCI{};
+// 		viewportStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+// 		viewportStateCI.viewportCount = 1;
+// 		viewportStateCI.scissorCount = 1;
+//
+// 		VkPipelineMultisampleStateCreateInfo multisampleStateCI{};
+// 		multisampleStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+//
+// 		if (multiSampleCount > VK_SAMPLE_COUNT_1_BIT) {
+// 			multisampleStateCI.rasterizationSamples = multiSampleCount;
+// 		}
+//
+// 		std::vector<VkDynamicState> dynamicStateEnables = {
+// 			VK_DYNAMIC_STATE_VIEWPORT,
+// 			VK_DYNAMIC_STATE_SCISSOR
+// 		};
+// 		VkPipelineDynamicStateCreateInfo dynamicStateCI{};
+// 		dynamicStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+// 		dynamicStateCI.pDynamicStates = dynamicStateEnables.data();
+// 		dynamicStateCI.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+//
+// 		VkVertexInputBindingDescription vertexInputBinding = { 0, 20, VK_VERTEX_INPUT_RATE_VERTEX };
+// 		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
+// 			{ 0, 0, VK_FORMAT_R32G32_SFLOAT, 0 },
+// 			{ 1, 0, VK_FORMAT_R32G32_SFLOAT, sizeof(float) * 2 },
+// 			{ 2, 0, VK_FORMAT_R8G8B8A8_UNORM, sizeof(float) * 4 },
+// 		};
+// 		VkPipelineVertexInputStateCreateInfo vertexInputStateCI{};
+// 		vertexInputStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+// 		vertexInputStateCI.vertexBindingDescriptionCount = 1;
+// 		vertexInputStateCI.pVertexBindingDescriptions = &vertexInputBinding;
+// 		vertexInputStateCI.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
+// 		vertexInputStateCI.pVertexAttributeDescriptions = vertexInputAttributes.data();
+//
+// 		std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
+//
+// 		VkGraphicsPipelineCreateInfo pipelineCI{};
+// 		pipelineCI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+// 		pipelineCI.layout = pipelineLayout;
+// 		pipelineCI.renderPass = renderPass;
+// 		pipelineCI.pInputAssemblyState = &inputAssemblyStateCI;
+// 		pipelineCI.pVertexInputState = &vertexInputStateCI;
+// 		pipelineCI.pRasterizationState = &rasterizationStateCI;
+// 		pipelineCI.pColorBlendState = &colorBlendStateCI;
+// 		pipelineCI.pMultisampleState = &multisampleStateCI;
+// 		pipelineCI.pViewportState = &viewportStateCI;
+// 		pipelineCI.pDepthStencilState = &depthStencilStateCI;
+// 		pipelineCI.pDynamicState = &dynamicStateCI;
+// 		pipelineCI.stageCount = static_cast<uint32_t>(shaderStages.size());
+// 		pipelineCI.pStages = shaderStages.data();
+//
+// 		pipelineCI.layout = pipelineLayout;
+// 		shaderStages = {
+// 			loadShader(device, "ui.vert.spv", VK_SHADER_STAGE_VERTEX_BIT),
+// 			loadShader(device, "ui.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)
+// 		};
+// 		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &pipeline));
+//
+// 		for (auto shaderStage : shaderStages) {
+// 			vkDestroyShaderModule(device, shaderStage.module, nullptr);
+// 		}
 	}
 	
 	~UI() {
+		SDL_WaitForGPUIdle(device);
+		ImGui_ImplSDL3_Shutdown();
+		ImGui_ImplSDLGPU3_Shutdown();
 		ImGui::DestroyContext();
-		vertexBuffer.destroy();
-		indexBuffer.destroy();
-		vkDestroyPipeline(device, pipeline, nullptr);
-		vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-		vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
-		vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+		// PETEHUF_TODO: impl
+		// ImGui::DestroyContext();
+		// vertexBuffer.destroy();
+		// indexBuffer.destroy();
+		// vkDestroyPipeline(device, pipeline, nullptr);
+		// vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+		// vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
+		// vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	}
 
 	void draw(VkCommandBuffer cmdBuffer) {

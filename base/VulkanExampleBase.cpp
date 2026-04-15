@@ -311,7 +311,7 @@ void VulkanExampleBase::renderFrame()
 
 void VulkanExampleBase::renderLoop()
 {
-	// PETEHUF_TODO: impl
+	// PETEHUF_TODO: remove
 // 	destWidth = width;
 // 	destHeight = height;
 // #if defined(_WIN32)
@@ -387,9 +387,6 @@ VulkanExampleBase::VulkanExampleBase()
 VulkanExampleBase::~VulkanExampleBase()
 {
 	SDL_WaitForGPUIdle(device);
-	// ImGui_ImplSDL3_Shutdown();
-	// ImGui_ImplSDLGPU3_Shutdown();// PETEHUF_TODO: impl
-	// ImGui::DestroyContext();
 
 	SDL_ReleaseWindowFromGPUDevice(device, window);
 	SDL_DestroyGPUDevice(device);
@@ -736,7 +733,7 @@ SDL_AppResult VulkanExampleBase::handleMessages(void* appstate, SDL_Event* event
 	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
 	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-	//ImGui_ImplSDL3_ProcessEvent(event); // PETEHUF_TODO: putback
+	ImGui_ImplSDL3_ProcessEvent(event); // PETEHUF_TODO: putback
 	if (event->type == SDL_EVENT_QUIT ||
 		(event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event->window.windowID == SDL_GetWindowID(window))) {
 		return SDL_APP_SUCCESS;
