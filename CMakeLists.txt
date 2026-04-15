@@ -16,15 +16,10 @@ include_directories(base)
 
 add_subdirectory(external/sdl)
 
+# BEGIN ImGui doesn't come with CMakeLists.txt, so make a simple library here
 set(IMGUI_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
 
 add_library(ImGui STATIC)
-
-#target_include_directories( # PETEHUF_TODO: cleanup
-#	ImGui
-#	PUBLIC
-#	${CMAKE_CURRENT_SOURCE_DIR}
-#)
 
 message(${IMGUI_ROOT})
 
@@ -56,7 +51,7 @@ target_sources(
 	${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3.cpp ${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3.h
 	${IMGUI_ROOT}/backends/imgui_impl_sdlgpu3_shaders.h
 )
-
+# END ImGui
 
 OPTION(USE_D2D_WSI "Build the project using Direct to Display swapchain" OFF)
 OPTION(USE_WAYLAND_WSI "Build the project using Wayland swapchain" OFF)

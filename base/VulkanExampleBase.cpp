@@ -309,34 +309,6 @@ void VulkanExampleBase::renderFrame()
 	}
 }
 
-void VulkanExampleBase::renderLoop()
-{
-	// PETEHUF_TODO: remove
-// 	destWidth = width;
-// 	destHeight = height;
-// #if defined(_WIN32)
-// 	MSG msg;
-// 	bool quitMessageReceived = false;
-// 	while (!quitMessageReceived) {
-// 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-// 			TranslateMessage(&msg);
-// 			DispatchMessage(&msg);
-// 			if (msg.message == WM_QUIT) {
-// 				quitMessageReceived = true;
-// 				break;
-// 			}
-// 		}
-// 		if (!IsIconic(window_WIN32)) {
-// 			renderFrame();
-// 		}
-// 	}
-// #else
-// #error More migration needed
-// #endif
-// 	// Flush device to make sure all resources can be freed
-// 	vkDeviceWaitIdle(device_VULKAN);
-}
-
 VulkanExampleBase::VulkanExampleBase()
 {
 	char* numConvPtr;
@@ -424,7 +396,7 @@ VulkanExampleBase::~VulkanExampleBase()
 
 void VulkanExampleBase::initVulkan()
 {
-	// Create GPU Device // PETEHUF_TODO: cleanup or move
+	// Create GPU Device
 	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
 	if (device == nullptr) {
 		SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
@@ -447,7 +419,7 @@ void VulkanExampleBase::initVulkan()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
 
-
+	// PETEHUF_TODO: finish impl
 	// VkResult err;
 	//
 	// /*
@@ -569,67 +541,7 @@ void VulkanExampleBase::setupWindow()
 	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	SDL_ShowWindow(window);
 
-	// // Create GPU Device // PETEHUF_TODO: cleanup or move
-	// gpu_device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
-	// if (gpu_device == nullptr) {
-	// 	SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
-	// 	return SDL_APP_FAILURE;
-	// }
-	//
-	// // Claim window for GPU Device
-	// if (!SDL_ClaimWindowForGPUDevice(gpu_device, window)) {
-	// 	SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
-	// 	return SDL_APP_FAILURE;
-	// }
-	//
-	// SDL_SetGPUSwapchainParameters(gpu_device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
-	//
-	// // Setup Dear ImGui context
-	// IMGUI_CHECKVERSION();
-	// ImGui::CreateContext();
-	// ImGuiIO& io = ImGui::GetIO();
-	// (void)io;
-	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-	// io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-	//
-	// // Setup Dear ImGui style
-	// ImGui::StyleColorsDark();
-	// //ImGui::StyleColorsLight();
-	//
-	// // Setup scaling
-	// ImGuiStyle& style = ImGui::GetStyle();
-	// style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-	// style.FontScaleDpi = main_scale; // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
-	//
-	// // Setup Platform/Renderer backends
-	// ImGui_ImplSDL3_InitForSDLGPU(window);
-	// ImGui_ImplSDLGPU3_InitInfo init_info = {};
-	// init_info.Device = gpu_device;
-	// init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
-	// init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1; // Only used in multi-viewports mode.
-	// init_info.SwapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // Only used in multi-viewports mode.
-	// init_info.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
-	// ImGui_ImplSDLGPU3_Init(&init_info);
-
-
-	// Load Fonts
-	// - If fonts are not explicitly loaded, Dear ImGui will select an embedded font: either AddFontDefaultVector() or AddFontDefaultBitmap().
-	//   This selection is based on (style.FontSizeBase * style.FontScaleMain * style.FontScaleDpi) reaching a small threshold.
-	// - You can load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-	// - If a file cannot be loaded, AddFont functions will return a nullptr. Please handle those errors in your code (e.g. use an assertion, display an error and quit).
-	// - Read 'docs/FONTS.md' for more instructions and details.
-	// - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use FreeType for higher quality font rendering.
-	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-	//style.FontSizeBase = 20.0f;
-	//io.Fonts->AddFontDefaultVector();
-	//io.Fonts->AddFontDefaultBitmap();
-	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
-	//io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
-	//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
-	//IM_ASSERT(font != nullptr);
-	// PETEHUF_TODO: impl
+	// PETEHUF_TODO: finish impl
 
 	// this->windowInstance = hinstance;
 	//
@@ -733,7 +645,7 @@ SDL_AppResult VulkanExampleBase::handleMessages(void* appstate, SDL_Event* event
 	// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
 	// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 	// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-	ImGui_ImplSDL3_ProcessEvent(event); // PETEHUF_TODO: putback
+	ImGui_ImplSDL3_ProcessEvent(event);
 	if (event->type == SDL_EVENT_QUIT ||
 		(event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event->window.windowID == SDL_GetWindowID(window))) {
 		return SDL_APP_SUCCESS;
