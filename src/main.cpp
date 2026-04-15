@@ -2212,8 +2212,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) // PETEHUF_TO
 	*appstate = vulkanApplication;
 
 	vulkanApplication->setupWindow();
-	vulkanApplication->initVulkan(); // PETEHUF_TODO: putback
-	//vulkanApplication->prepare(); // PETEHUF_TODO: putback
+	vulkanApplication->initVulkan();
+	vulkanApplication->prepare(); // PETEHUF_TODO: putback
 
 	return SDL_APP_CONTINUE;
 }

@@ -42,7 +42,34 @@ public:
 		glm::vec2 translate;
 	} pushConstBlock;
 
-	UI(vks::VulkanDevice *vulkanDevice, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount) {
+	UI(SDL_GPUDevice* device, SDL_Window* window/*vks::VulkanDevice *vulkanDevice, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
+		// Setup Dear ImGui context
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		(void)io;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+
+		// Setup Dear ImGui style
+		ImGui::StyleColorsDark();
+		//ImGui::StyleColorsLight();
+
+		// Setup scaling
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.ScaleAllSizes(main_scale); // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+		style.FontScaleDpi = main_scale; // Set initial font scale. (in docking branch: using io.ConfigDpiScaleFonts=true automatically overrides this for every window depending on the current monitor)
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplSDL3_InitForSDLGPU(window);
+		ImGui_ImplSDLGPU3_InitInfo init_info = {};
+		init_info.Device = device;
+		init_info.ColorTargetFormat = SDL_GetGPUSwapchainTextureFormat(device, window);
+		init_info.MSAASamples = SDL_GPU_SAMPLECOUNT_1; // Only used in multi-viewports mode.
+		init_info.SwapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // Only used in multi-viewports mode.
+		init_info.PresentMode = SDL_GPU_PRESENTMODE_VSYNC;
+		ImGui_ImplSDLGPU3_Init(&init_info);
+
 
 		this->device = vulkanDevice->logicalDevice;
 
