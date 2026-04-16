@@ -2279,46 +2279,86 @@ public:
 
 
 // called once at startup
-SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) // PETEHUF_TODO: noexcept
+SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 {
-	for (int32_t i = 0; i < __argc; i++) { VulkanApplication::args.push_back(__argv[i]); };
-	VulkanApplication* vulkanApplication = new VulkanApplication();
-	*appstate = vulkanApplication;
+	try {
+		for (int32_t i = 0; i < __argc; i++) { VulkanApplication::args.push_back(__argv[i]); };
+		VulkanApplication* vulkanApplication = new VulkanApplication();
+		*appstate = vulkanApplication;
 
-	vulkanApplication->setupWindow();
-	vulkanApplication->initVulkan();
-	vulkanApplication->prepare();
+		vulkanApplication->setupWindow();
+		vulkanApplication->initVulkan();
+		vulkanApplication->prepare();
 
-	return SDL_APP_CONTINUE;
+		return SDL_APP_CONTINUE;
+	}
+	catch (const std::exception& ex) {
+		SDL_Log("Caught exception: %s", ex.what());
+		return SDL_APP_FAILURE;
+	}
+	catch (...) {
+		SDL_Log("Caught exception: ...");
+		return SDL_APP_FAILURE;
+	}
 }
 
 // called when an event occurs
 SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
 {
-	VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
+	try {
+		VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
 
-	if (vulkanApplication != nullptr)
-	{
-		return vulkanApplication->handleMessages(appstate, event);
+		if (vulkanApplication != nullptr)
+		{
+			return vulkanApplication->handleMessages(appstate, event);
+		}
+
+		return SDL_APP_FAILURE;
 	}
-
-	return SDL_APP_FAILURE;
+	catch (const std::exception& ex) {
+		SDL_Log("Caught exception: %s", ex.what());
+		return SDL_APP_FAILURE;
+	}
+	catch (...) {
+		SDL_Log("Caught exception: ...");
+		return SDL_APP_FAILURE;
+	}
 }
 
 
 // called once per frame
 SDL_AppResult SDL_AppIterate(void* appstate)
 {
-	VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
+	try {
+		VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
 
-	vulkanApplication->renderFrame();
-	return SDL_APP_CONTINUE;
+		vulkanApplication->renderFrame();
+		return SDL_APP_CONTINUE;
+	}
+	catch (const std::exception& ex) {
+		SDL_Log("Caught exception: %s", ex.what());
+		return SDL_APP_FAILURE;
+	}
+	catch (...) {
+		SDL_Log("Caught exception: ...");
+		return SDL_APP_FAILURE;
+	}
 }
 
 // called once at shutdown
 void SDL_AppQuit(void* appstate, SDL_AppResult result)
 {
-	VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
+	try {
+		VulkanApplication* vulkanApplication = static_cast<VulkanApplication*>(appstate);
 
-	delete(vulkanApplication);
+		delete(vulkanApplication);
+	}
+	catch (const std::exception& ex) {
+		SDL_Log("Caught exception: %s", ex.what());
+		return;
+	}
+	catch (...) {
+		SDL_Log("Caught exception: ...");
+		return;
+	}
 }

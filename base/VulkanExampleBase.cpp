@@ -400,13 +400,13 @@ void VulkanExampleBase::initVulkan()
 	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
 	if (device == nullptr) {
 		SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
-		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
+		throw std::runtime_error("From VulkanExampleBase::initVulkan");
 	}
 
 	// Claim window for GPU Device
 	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
 		SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
-		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
+		throw std::runtime_error("From VulkanExampleBase::initVulkan");
 	}
 
 	SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
@@ -526,7 +526,7 @@ void VulkanExampleBase::setupWindow()
 	// Setup SDL
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
 		SDL_Log("Error: SDL_Init(): %s", SDL_GetError());
-		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
+		throw std::runtime_error("From VulkanExampleBase::setupWindow");
 	}
 
 	// Create SDL window graphics context
@@ -535,7 +535,7 @@ void VulkanExampleBase::setupWindow()
 	window = SDL_CreateWindow(name.c_str(), static_cast<int>(1280 * main_scale), static_cast<int>(800 * main_scale), window_flags);
 	if (window == nullptr) {
 		SDL_Log("Error: SDL_CreateWindow(): %s", SDL_GetError());
-		return /*SDL_APP_FAILURE*/; // PETEHUF_TODO: cleanup
+		throw std::runtime_error("From VulkanExampleBase::setupWindow");
 	}
 
 	SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
