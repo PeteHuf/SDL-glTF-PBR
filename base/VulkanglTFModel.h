@@ -26,6 +26,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "basisu_transcoder.h"
+#include "SDL3/SDL_gpu.h"
 
 // ERROR is already defined in wingdi.h and collides with a define in the Draco headers
 #if defined(_WIN32) && defined(ERROR) && defined(TINYGLTF_ENABLE_DRACO) 
@@ -60,7 +61,7 @@ namespace vkglTF
 	// 	VkSamplerAddressMode addressModeV;
 	// 	VkSamplerAddressMode addressModeW;
 	// };
-	//
+
 	// struct Texture {
 	// 	vks::VulkanDevice *device;
 	// 	VkImage image;
@@ -76,7 +77,7 @@ namespace vkglTF
 	// 	void destroy();
 	// 	void fromglTfImage(tinygltf::Image& gltfimage, std::string path, TextureSampler textureSampler, vks::VulkanDevice* device, VkQueue copyQueue);
 	// };
-	//
+
 	// struct Material {
 	// 	enum AlphaMode{ ALPHAMODE_OPAQUE, ALPHAMODE_MASK, ALPHAMODE_BLEND };
 	// 	AlphaMode alphaMode = ALPHAMODE_OPAQUE;

@@ -24,7 +24,7 @@
 struct UI {
 private:
 	SDL_GPUDevice* device;
-	//VkDevice device_VULKAN;
+	//VkDevice device;
 public:
 	// Buffer vertexBuffer, indexBuffer;
 	// vks::Texture2D fontTexture;
@@ -40,8 +40,8 @@ public:
 		glm::vec2 translate;
 	} pushConstBlock;
 
-	UI(SDL_GPUDevice* device, SDL_Window* window/*vks::VulkanDevice *vulkanDevice, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
-		this->device = device;
+	UI(/*SDL_GPUDevice* device,*/ SDL_Window* window, vks::VulkanDevice *vulkanDevice/*, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
+		this->device = vulkanDevice->logicalDevice;
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -72,7 +72,6 @@ public:
 		ImGui_ImplSDLGPU3_Init(&init_info);
 
 // PETEHUF_TODO: impl
-// 		this->device = vulkanDevice->logicalDevice;
 //
 // 		ImGui::CreateContext();
 //

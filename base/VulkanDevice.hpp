@@ -16,6 +16,8 @@
 #include <cstring>
 #include <vector>
 //#include "vulkan/vulkan.h" // PETEHUF_TODO: remove
+#include "SDL3/SDL.h"
+#include "SDL3/SDL_gpu.h"
 
 #include "macros.h"
 
@@ -23,75 +25,97 @@ namespace vks
 {
 	// PORT_NOTE: we'll rely on the SDL virtual device for now
 
-// 	struct VulkanDevice
-// 	{
-// 		VkPhysicalDevice physicalDevice;
-// 		VkDevice logicalDevice;
-// 		VkPhysicalDeviceProperties properties;
-// 		VkPhysicalDeviceFeatures features;
-// 		VkPhysicalDeviceFeatures enabledFeatures;
-// 		VkPhysicalDeviceMemoryProperties memoryProperties;
-// 		std::vector<VkQueueFamilyProperties> queueFamilyProperties;
-// 		VkCommandPool commandPool = VK_NULL_HANDLE;
-// 		bool requiresStaging = true;
-//
-// 		struct {
-// 			uint32_t graphics;
-// 			uint32_t compute;
-// 		} queueFamilyIndices;
-//
-// 		operator VkDevice() { return logicalDevice; };
-//
-// 		/**
-// 		* Default constructor
-// 		*
-// 		* @param physicalDevice Physical device that is to be used
-// 		*/
-// 		VulkanDevice(VkPhysicalDevice physicalDevice)
-// 		{
-// 			assert(physicalDevice);
-// 			this->physicalDevice = physicalDevice;
-//
-// 			// Store Properties features, limits and properties of the physical device for later use
-// 			// Device properties also contain limits and sparse properties
-// 			vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-// 			// Features should be checked by the examples before using them
-// 			vkGetPhysicalDeviceFeatures(physicalDevice, &features);
-// 			// Memory properties are used regularly for creating all kinds of buffers
-// 			vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
-// 			// Queue family properties, used for setting up requested queues upon device creation
-// 			uint32_t queueFamilyCount;
-// 			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
-// 			assert(queueFamilyCount > 0);
-// 			queueFamilyProperties.resize(queueFamilyCount);
-// 			vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
-//
-// 			// Check if the device has a host accesible device local buffer
-// 			// That either means BAR (max. 256 MByte) or ReBAR (SAM)/Integrated GPU with access to all memory
-// 			// But even 256 MByte is more than enough, and such a memory type saves us from having to stage memory
-// 			for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
-// 				if (((memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) > 0) && ((memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) > 0)) {
-// 					requiresStaging = false;
-// 					break;
-// 				}
-// 			}
-// 		}
-//
-// 		/**
-// 		* Default destructor
-// 		*
-// 		* @note Frees the logical device
-// 		*/
-// 		~VulkanDevice()
-// 		{
-// 			if (commandPool) {
-// 				vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
-// 			}
-// 			if (logicalDevice) {
-// 				vkDestroyDevice(logicalDevice, nullptr);
-// 			}
-// 		}
-//
+	struct VulkanDevice
+	{
+		SDL_Window* window;
+		// VkPhysicalDevice physicalDevice;
+		SDL_GPUDevice* logicalDevice;
+		// VkPhysicalDeviceProperties properties;
+		// VkPhysicalDeviceFeatures features;
+		// VkPhysicalDeviceFeatures enabledFeatures;
+		// VkPhysicalDeviceMemoryProperties memoryProperties;
+		// std::vector<VkQueueFamilyProperties> queueFamilyProperties;
+		// VkCommandPool commandPool = VK_NULL_HANDLE;
+		bool requiresStaging = true;
+
+		struct {
+			uint32_t graphics;
+			uint32_t compute;
+		} queueFamilyIndices;
+
+		// operator VkDevice() { return logicalDevice; };
+
+		/**
+		* Default constructor
+		*
+		* @param physicalDevice Physical device that is to be used
+		*/
+		VulkanDevice(/*VkPhysicalDevice physicalDevice*/ SDL_Window* window)
+		{
+			this->window = window;
+
+			// Create GPU Device
+			logicalDevice = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
+			if (logicalDevice == nullptr) {
+				SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
+				throw std::runtime_error("From VulkanExampleBase::initVulkan");
+			}
+
+			// Claim window for GPU Device
+			if (!SDL_ClaimWindowForGPUDevice(logicalDevice, window)) {
+				SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
+				throw std::runtime_error("From VulkanExampleBase::initVulkan");
+			}
+
+			SDL_SetGPUSwapchainParameters(logicalDevice, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
+
+
+			// assert(physicalDevice);
+			// this->physicalDevice = physicalDevice;
+			//
+			// // Store Properties features, limits and properties of the physical device for later use
+			// // Device properties also contain limits and sparse properties
+			// vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+			// // Features should be checked by the examples before using them
+			// vkGetPhysicalDeviceFeatures(physicalDevice, &features);
+			// // Memory properties are used regularly for creating all kinds of buffers
+			// vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+			// // Queue family properties, used for setting up requested queues upon device creation
+			// uint32_t queueFamilyCount;
+			// vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, nullptr);
+			// assert(queueFamilyCount > 0);
+			// queueFamilyProperties.resize(queueFamilyCount);
+			// vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+			//
+			// // Check if the device has a host accesible device local buffer
+			// // That either means BAR (max. 256 MByte) or ReBAR (SAM)/Integrated GPU with access to all memory
+			// // But even 256 MByte is more than enough, and such a memory type saves us from having to stage memory
+			// for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+			// 	if (((memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) > 0) && ((memoryProperties.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) > 0)) {
+			// 		requiresStaging = false;
+			// 		break;
+			// 	}
+			// }
+		}
+
+		/**
+		* Default destructor
+		*
+		* @note Frees the logical device
+		*/
+		~VulkanDevice()
+		{
+			SDL_WaitForGPUIdle(logicalDevice);
+
+			// if (commandPool) {
+			// 	vkDestroyCommandPool(logicalDevice, commandPool, nullptr);
+			// }
+			if (logicalDevice) {
+				SDL_ReleaseWindowFromGPUDevice(logicalDevice, window);
+				SDL_DestroyGPUDevice(logicalDevice);
+			}
+		}
+
 // 		/**
 // 		* Get the index of a memory type that has all the requested property bits set
 // 		*
@@ -394,5 +418,5 @@ namespace vks
 // 				vkFreeCommandBuffers(logicalDevice, commandPool, 1, &commandBuffer);
 // 			}
 // 		}
-// 	};
+	};
 }

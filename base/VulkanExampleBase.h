@@ -77,8 +77,7 @@ protected:
 	// VkPhysicalDeviceFeatures deviceFeatures;
 	// VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
 	SDL_GPUDevice* device;
-	// VkDevice device_VULKAN; // PETEHUF_TODO: remove
-	// vks::VulkanDevice *vulkanDevice;
+	vks::VulkanDevice *vulkanDevice;
 	// VkQueue queue;
 	// VkFormat depthFormat;
 	// VkCommandPool cmdPool;

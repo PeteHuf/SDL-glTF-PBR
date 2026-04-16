@@ -99,7 +99,7 @@ void VulkanExampleBase::prepare()
 	// cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	// cmdPoolInfo.queueFamilyIndex = swapChain.queueNodeIndex;
 	// cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-	// VK_CHECK_RESULT(vkCreateCommandPool(device_VULKAN, &cmdPoolInfo, nullptr, &cmdPool));
+	// VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
 	//
 	// /*
 	// 	Render pass
@@ -196,7 +196,7 @@ void VulkanExampleBase::prepare()
 	// 	renderPassCI.pSubpasses = &subpass;
 	// 	renderPassCI.dependencyCount = 2;
 	// 	renderPassCI.pDependencies = dependencies.data();
-	// 	VK_CHECK_RESULT(vkCreateRenderPass(device_VULKAN, &renderPassCI, nullptr, &renderPass));
+	// 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassCI, nullptr, &renderPass));
 	// }
 	// else {
 	// 	std::array<VkAttachmentDescription, 2> attachments = {};
@@ -265,7 +265,7 @@ void VulkanExampleBase::prepare()
 	// 	renderPassCI.pSubpasses = &subpassDescription;
 	// 	renderPassCI.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	// 	renderPassCI.pDependencies = dependencies.data();
-	// 	VK_CHECK_RESULT(vkCreateRenderPass(device_VULKAN, &renderPassCI, nullptr, &renderPass));
+	// 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassCI, nullptr, &renderPass));
 	// }
 	//
 	// /*
@@ -273,7 +273,7 @@ void VulkanExampleBase::prepare()
 	// */
 	// VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
 	// pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-	// VK_CHECK_RESULT(vkCreatePipelineCache(device_VULKAN, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+	// VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
 
 	/*
 		Frame buffer
@@ -350,67 +350,38 @@ VulkanExampleBase::VulkanExampleBase()
 
 VulkanExampleBase::~VulkanExampleBase()
 {
-	SDL_WaitForGPUIdle(device);
-
-	SDL_ReleaseWindowFromGPUDevice(device, window);
-	SDL_DestroyGPUDevice(device);
-
-	SDL_DestroyWindow(window);
-
-
 	// PETEHUF_TODO: impl
 	// // Clean up Vulkan resources
 	// swapChain.cleanup();
-	// vkDestroyDescriptorPool(device_VULKAN, descriptorPool, nullptr);
-	// vkDestroyRenderPass(device_VULKAN, renderPass, nullptr);
+	// vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+	// vkDestroyRenderPass(device, renderPass, nullptr);
 	// for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-	// 	vkDestroyFramebuffer(device_VULKAN, frameBuffers[i], nullptr);
+	// 	vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
 	// }
-	// vkDestroyImageView(device_VULKAN, depthStencil.view, nullptr);
-	// vkDestroyImage(device_VULKAN, depthStencil.image, nullptr);
-	// vkFreeMemory(device_VULKAN, depthStencil.mem, nullptr);
-	// vkDestroyPipelineCache(device_VULKAN, pipelineCache, nullptr);
-	// vkDestroyCommandPool(device_VULKAN, cmdPool, nullptr);
+	// vkDestroyImageView(device, depthStencil.view, nullptr);
+	// vkDestroyImage(device, depthStencil.image, nullptr);
+	// vkFreeMemory(device, depthStencil.mem, nullptr);
+	// vkDestroyPipelineCache(device, pipelineCache, nullptr);
+	// vkDestroyCommandPool(device, cmdPool, nullptr);
 	// if (settings.multiSampling) {
-	// 	vkDestroyImage(device_VULKAN, multisampleTarget.color.image, nullptr);
-	// 	vkDestroyImageView(device_VULKAN, multisampleTarget.color.view, nullptr);
-	// 	vkFreeMemory(device_VULKAN, multisampleTarget.color.memory, nullptr);
-	// 	vkDestroyImage(device_VULKAN, multisampleTarget.depth.image, nullptr);
-	// 	vkDestroyImageView(device_VULKAN, multisampleTarget.depth.view, nullptr);
-	// 	vkFreeMemory(device_VULKAN, multisampleTarget.depth.memory, nullptr);
+	// 	vkDestroyImage(device, multisampleTarget.color.image, nullptr);
+	// 	vkDestroyImageView(device, multisampleTarget.color.view, nullptr);
+	// 	vkFreeMemory(device, multisampleTarget.color.memory, nullptr);
+	// 	vkDestroyImage(device, multisampleTarget.depth.image, nullptr);
+	// 	vkDestroyImageView(device, multisampleTarget.depth.view, nullptr);
+	// 	vkFreeMemory(device, multisampleTarget.depth.memory, nullptr);
 	// }
-	// delete vulkanDevice;
+	delete vulkanDevice;
 	// if (settings.validation) {
 	// 	vkDestroyDebugReportCallback(instance, debugReportCallback, nullptr);
 	// }
 	// vkDestroyInstance(instance, nullptr);
+
+	SDL_DestroyWindow(window);
 }
 
 void VulkanExampleBase::initVulkan()
 {
-	// Create GPU Device
-	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB, true, nullptr);
-	if (device == nullptr) {
-		SDL_Log("Error: SDL_CreateGPUDevice(): %s", SDL_GetError());
-		throw std::runtime_error("From VulkanExampleBase::initVulkan");
-	}
-
-	// Claim window for GPU Device
-	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
-		SDL_Log("Error: SDL_ClaimWindowForGPUDevice(): %s", SDL_GetError());
-		throw std::runtime_error("From VulkanExampleBase::initVulkan");
-	}
-
-	SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
-
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	(void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-
 	// PETEHUF_TODO: finish impl
 	// VkResult err;
 	//
@@ -474,7 +445,7 @@ void VulkanExampleBase::initVulkan()
 	// /*
 	// 	Device creation
 	// */
-	// vulkanDevice = new vks::VulkanDevice(physicalDevice);
+	vulkanDevice = new vks::VulkanDevice(/*physicalDevice*/ window);
 	// VkPhysicalDeviceFeatures enabledFeatures{};
 	// if (deviceFeatures.samplerAnisotropy) {
 	// 	enabledFeatures.samplerAnisotropy = VK_TRUE;
@@ -485,7 +456,7 @@ void VulkanExampleBase::initVulkan()
 	// 	std::cerr << "Could not create Vulkan device!" << std::endl;
 	// 	exit(res);
 	// }
-	// device = vulkanDevice->logicalDevice;
+	device = vulkanDevice->logicalDevice;
 	//
 	// /*
 	// 	Graphics queue
@@ -766,10 +737,10 @@ void VulkanExampleBase::setupFrameBuffer()
 		// imageCI.samples = settings.sampleCount;
 		// imageCI.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 		// imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		// VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &imageCI, nullptr, &multisampleTarget.color.image));
+		// VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &multisampleTarget.color.image));
 		//
 		// VkMemoryRequirements memReqs;
-		// vkGetImageMemoryRequirements(device_VULKAN, multisampleTarget.color.image, &memReqs);
+		// vkGetImageMemoryRequirements(device, multisampleTarget.color.image, &memReqs);
 		// VkMemoryAllocateInfo memAllocInfo{};
 		// memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		// memAllocInfo.allocationSize = memReqs.size;
@@ -778,8 +749,8 @@ void VulkanExampleBase::setupFrameBuffer()
 		// if (!lazyMemTypePresent) {
 		// 	memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		// }
-		// VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &memAllocInfo, nullptr, &multisampleTarget.color.memory));
-		// vkBindImageMemory(device_VULKAN, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
+		// VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &multisampleTarget.color.memory));
+		// vkBindImageMemory(device, multisampleTarget.color.image, multisampleTarget.color.memory, 0);
 		//
 		// // Create image view for the MSAA target
 		// VkImageViewCreateInfo imageViewCI{};
@@ -794,7 +765,7 @@ void VulkanExampleBase::setupFrameBuffer()
 		// imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		// imageViewCI.subresourceRange.levelCount = 1;
 		// imageViewCI.subresourceRange.layerCount = 1;
-		// VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &imageViewCI, nullptr, &multisampleTarget.color.view));
+		// VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &multisampleTarget.color.view));
 		//
 		// // Depth target
 		// imageCI.imageType = VK_IMAGE_TYPE_2D;
@@ -809,17 +780,17 @@ void VulkanExampleBase::setupFrameBuffer()
 		// imageCI.samples = settings.sampleCount;
 		// imageCI.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		// imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		// VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &imageCI, nullptr, &multisampleTarget.depth.image));
+		// VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &multisampleTarget.depth.image));
 		//
-		// vkGetImageMemoryRequirements(device_VULKAN, multisampleTarget.depth.image, &memReqs);
+		// vkGetImageMemoryRequirements(device, multisampleTarget.depth.image, &memReqs);
 		// memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		// memAllocInfo.allocationSize = memReqs.size;
 		// memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT, &lazyMemTypePresent);
 		// if (!lazyMemTypePresent) {
 		// 	memAllocInfo.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		// }
-		// VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &memAllocInfo, nullptr, &multisampleTarget.depth.memory));
-		// vkBindImageMemory(device_VULKAN, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
+		// VK_CHECK_RESULT(vkAllocateMemory(device, &memAllocInfo, nullptr, &multisampleTarget.depth.memory));
+		// vkBindImageMemory(device, multisampleTarget.depth.image, multisampleTarget.depth.memory, 0);
 		//
 		// // Create image view for the MSAA target
 		// imageViewCI.image = multisampleTarget.depth.image;
@@ -832,7 +803,7 @@ void VulkanExampleBase::setupFrameBuffer()
 		// imageViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 		// imageViewCI.subresourceRange.levelCount = 1;
 		// imageViewCI.subresourceRange.layerCount = 1;
-		// VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &imageViewCI, nullptr, &multisampleTarget.depth.view));
+		// VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &multisampleTarget.depth.view));
 	}
 
 
@@ -871,15 +842,15 @@ void VulkanExampleBase::setupFrameBuffer()
 	// depthStencilView.subresourceRange.layerCount = 1;
 	//
 	// VkMemoryRequirements memReqs;
-	// VK_CHECK_RESULT(vkCreateImage(device_VULKAN, &image, nullptr, &depthStencil.image));
-	// vkGetImageMemoryRequirements(device_VULKAN, depthStencil.image, &memReqs);
+	// VK_CHECK_RESULT(vkCreateImage(device, &image, nullptr, &depthStencil.image));
+	// vkGetImageMemoryRequirements(device, depthStencil.image, &memReqs);
 	// mem_alloc.allocationSize = memReqs.size;
 	// mem_alloc.memoryTypeIndex = vulkanDevice->getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	// VK_CHECK_RESULT(vkAllocateMemory(device_VULKAN, &mem_alloc, nullptr, &depthStencil.mem));
-	// VK_CHECK_RESULT(vkBindImageMemory(device_VULKAN, depthStencil.image, depthStencil.mem, 0));
+	// VK_CHECK_RESULT(vkAllocateMemory(device, &mem_alloc, nullptr, &depthStencil.mem));
+	// VK_CHECK_RESULT(vkBindImageMemory(device, depthStencil.image, depthStencil.mem, 0));
 	//
 	// depthStencilView.image = depthStencil.image;
-	// VK_CHECK_RESULT(vkCreateImageView(device_VULKAN, &depthStencilView, nullptr, &depthStencil.view));
+	// VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilView, nullptr, &depthStencil.view));
 	//
 	// //
 	//
@@ -913,7 +884,7 @@ void VulkanExampleBase::setupFrameBuffer()
 	// 	else {
 	// 		attachments[0] = swapChain.buffers[i].view;
 	// 	}
-	// 	VK_CHECK_RESULT(vkCreateFramebuffer(device_VULKAN, &frameBufferCI, nullptr, &frameBuffers[i]));
+	// 	VK_CHECK_RESULT(vkCreateFramebuffer(device, &frameBufferCI, nullptr, &frameBuffers[i]));
 	// }
 }
 
@@ -925,22 +896,22 @@ void VulkanExampleBase::windowResize()
 	prepared = false;
 
 	SDL_WaitForGPUIdle(device);
-	// width = destWidth;
-	// height = destHeight;
+	width = destWidth;
+	height = destHeight;
 	setupSwapChain();
 	if (settings.multiSampling) {
-		// vkDestroyImageView(device_VULKAN, multisampleTarget.color.view, nullptr);
-		// vkDestroyImage(device_VULKAN, multisampleTarget.color.image, nullptr);
-		// vkFreeMemory(device_VULKAN, multisampleTarget.color.memory, nullptr);
-		// vkDestroyImageView(device_VULKAN, multisampleTarget.depth.view, nullptr);
-		// vkDestroyImage(device_VULKAN, multisampleTarget.depth.image, nullptr);
-		// vkFreeMemory(device_VULKAN, multisampleTarget.depth.memory, nullptr);
+		// vkDestroyImageView(device, multisampleTarget.color.view, nullptr);
+		// vkDestroyImage(device, multisampleTarget.color.image, nullptr);
+		// vkFreeMemory(device, multisampleTarget.color.memory, nullptr);
+		// vkDestroyImageView(device, multisampleTarget.depth.view, nullptr);
+		// vkDestroyImage(device, multisampleTarget.depth.image, nullptr);
+		// vkFreeMemory(device, multisampleTarget.depth.memory, nullptr);
 	}
-	// vkDestroyImageView(device_VULKAN, depthStencil.view, nullptr);
-	// vkDestroyImage(device_VULKAN, depthStencil.image, nullptr);
-	// vkFreeMemory(device_VULKAN, depthStencil.mem, nullptr);
+	// vkDestroyImageView(device, depthStencil.view, nullptr);
+	// vkDestroyImage(device, depthStencil.image, nullptr);
+	// vkFreeMemory(device, depthStencil.mem, nullptr);
 	// for (uint32_t i = 0; i < frameBuffers.size(); i++) {
-	// 	vkDestroyFramebuffer(device_VULKAN, frameBuffers[i], nullptr);
+	// 	vkDestroyFramebuffer(device, frameBuffers[i], nullptr);
 	// }
 	setupFrameBuffer();
 	SDL_WaitForGPUIdle(device);
