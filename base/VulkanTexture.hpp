@@ -32,7 +32,7 @@ namespace vks
 	// 	uint32_t mipLevels;
 	// 	uint32_t layerCount;
 	// 	VkDescriptorImageInfo descriptor;
-	// 	VkSampler sampler;
+	// 	SDL_GPUSampler sampler;
 	//
 	// 	void updateDescriptor()
 	// 	{
@@ -59,7 +59,7 @@ namespace vks
 	// 		std::string filename,
 	// 		VkFormat format,
 	// 		vks::VulkanDevice *device,
-	// 		VkQueue copyQueue,
+	// 		vks::DummyQueue* copyQueue,
 	// 		VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
 	// 		VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	// 	{
@@ -80,7 +80,7 @@ namespace vks
 	// 		VkMemoryRequirements memReqs;
 	//
 	// 		// Use a separate command buffer for texture loading
-	// 		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 		// Create a host-visible staging buffer that contains the raw image data
 	// 		VkBuffer stagingBuffer;
@@ -247,8 +247,8 @@ namespace vks
 	// 		uint32_t width,
 	// 		uint32_t height,
 	// 		vks::VulkanDevice *device,
-	// 		VkQueue copyQueue,
-	// 		VkFilter filter = VK_FILTER_LINEAR,
+	// 		vks::DummyQueue* copyQueue,
+	// 		SDL_GPUFilter filter = VK_FILTER_LINEAR,
 	// 		VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
 	// 		VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	// 	{
@@ -263,7 +263,7 @@ namespace vks
 	// 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	// 		VkMemoryRequirements memReqs;
 	// 		// Use a separate command buffer for texture loading
-	// 		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 		// Create a host-visible staging buffer that contains the raw image data
 	// 		VkBuffer stagingBuffer;
@@ -417,7 +417,7 @@ namespace vks
 	// 		std::string filename,
 	// 		VkFormat format,
 	// 		vks::VulkanDevice *device,
-	// 		VkQueue copyQueue,
+	// 		vks::DummyQueue* copyQueue,
 	// 		VkImageUsageFlags imageUsageFlags = VK_IMAGE_USAGE_SAMPLED_BIT,
 	// 		VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	// 	{
@@ -518,7 +518,7 @@ namespace vks
 	// 		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 	//
 	// 		// Use a separate command buffer for texture loading
-	// 		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 		// Image barrier for optimal image (target)
 	// 		// Set initial layout for all array layers (faces) of the optimal (target) tiled texture

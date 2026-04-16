@@ -397,7 +397,7 @@ public:
 // 	*
 // 	* @return VkResult of the queue presentation
 // 	*/
-// 	VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE)
+// 	VkResult queuePresent(vks::DummyQueue* queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE)
 // 	{
 // 		VkPresentInfoKHR presentInfo = {};
 // 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

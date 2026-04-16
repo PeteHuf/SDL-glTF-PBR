@@ -95,7 +95,7 @@ public:
 	// };
 	// std::vector<DescriptorSets> descriptorSets;
 	//
-	// std::vector<VkCommandBuffer> commandBuffers;
+	// std::vector<SDL_GPUCommandBuffer*> commandBuffers;
 	// std::vector<UniformBufferSet> uniformBuffers;
 	//
 	// std::vector<VkFence> waitFences;
@@ -319,7 +319,7 @@ public:
 	// 	renderPassBeginInfo.pClearValues = clearValues;
 	// 	renderPassBeginInfo.framebuffer = frameBuffers[imageIndex];
 	//
-	// 	VkCommandBuffer currentCB = commandBuffers[frameIndex];
+	// 	SDL_GPUCommandBuffer* currentCB = commandBuffers[frameIndex];
 	//
 	// 	VK_CHECK_RESULT(vkBeginCommandBuffer(currentCB, &cmdBufferBeginInfo));
 	// 	vkCmdBeginRenderPass(currentCB, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -424,7 +424,7 @@ public:
 		// VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bufferSize, &shaderMaterialBuffer.buffer, &shaderMaterialBuffer.memory));
 		//
 		// // Copy from staging buffers
-		// VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		// SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		// VkBufferCopy copyRegion{};
 		// copyRegion.size = bufferSize;
 		// vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMaterialBuffer.buffer, 1, &copyRegion);
@@ -473,7 +473,7 @@ public:
 		// 		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &stagingBuffer.buffer, &stagingBuffer.memory, shaderMeshData.data()));
 		// 		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bufferSize, &shaderMeshDataBuffer.buffer, &shaderMeshDataBuffer.memory));
 		// 		// Copy from staging buffers
-		// 		VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		// 		SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		// 		VkBufferCopy copyRegion{};
 		// 		copyRegion.size = bufferSize;
 		// 		vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffer.buffer, 1, &copyRegion);
@@ -512,7 +512,7 @@ public:
 		// 	Buffer stagingBuffer;
 		// 	VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &stagingBuffer.buffer, &stagingBuffer.memory, shaderMeshData.data()));
 		// 	// Copy from staging buffers
-		// 	VkCommandBuffer copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		// 	SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		// 	VkBufferCopy copyRegion{};
 		// 	copyRegion.size = bufferSize;
 		// 	vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffers[index].buffer, 1, &copyRegion);
@@ -1226,7 +1226,7 @@ public:
 		// renderPassBeginInfo.pClearValues = clearValues;
 		// renderPassBeginInfo.framebuffer = framebuffer;
 		//
-		// VkCommandBuffer cmdBuf = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		// SDL_GPUCommandBuffer* cmdBuf = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		// vkCmdBeginRenderPass(cmdBuf, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 		//
 		// VkViewport viewport{};
@@ -1456,7 +1456,7 @@ public:
 		// 		framebufferCI.layers = 1;
 		// 		VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferCI, nullptr, &offscreen.framebuffer));
 		//
-		// 		VkCommandBuffer layoutCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		// 		SDL_GPUCommandBuffer* layoutCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 		// 		VkImageMemoryBarrier imageMemoryBarrier{};
 		// 		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		// 		imageMemoryBarrier.image = offscreen.image;
@@ -1649,7 +1649,7 @@ public:
 		// 		glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
 		// 	};
 		//
-		// 	VkCommandBuffer cmdBuf = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
+		// 	SDL_GPUCommandBuffer* cmdBuf = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, false);
 		//
 		// 	VkViewport viewport{};
 		// 	viewport.width = (float)dim;

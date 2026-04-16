@@ -40,7 +40,7 @@ public:
 		glm::vec2 translate;
 	} pushConstBlock;
 
-	UI(/*SDL_GPUDevice* device,*/ SDL_Window* window, vks::VulkanDevice *vulkanDevice/*, VkRenderPass renderPass, VkQueue queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
+	UI(/*SDL_GPUDevice* device,*/ SDL_Window* window, vks::VulkanDevice *vulkanDevice/*, VkRenderPass renderPass, vks::DummyQueue* queue, VkPipelineCache pipelineCache, VkSampleCountFlagBits multiSampleCount*/) {
 		this->device = vulkanDevice->logicalDevice;
 
 		// Setup Dear ImGui context
@@ -278,7 +278,7 @@ public:
 		// vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	}
 
-	// void draw(VkCommandBuffer cmdBuffer) {
+	// void draw(SDL_GPUCommandBuffer* cmdBuffer) {
 	// 	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 	// 	vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 	//

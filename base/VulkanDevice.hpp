@@ -23,7 +23,8 @@
 
 namespace vks
 {
-	// PORT_NOTE: we'll rely on the SDL virtual device for now
+	// looks like SDL has a global queue via SDL_SubmitGPUCommandBuffer
+	struct DummyQueue {};
 
 	struct VulkanDevice
 	{
@@ -354,7 +355,7 @@ namespace vks
 // 		*
 // 		* @return A handle to the allocated command buffer
 // 		*/
-// 		VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin = false)
+// 		SDL_GPUCommandBuffer* createCommandBuffer(VkCommandBufferLevel level, bool begin = false)
 // 		{
 // 			VkCommandBufferAllocateInfo cmdBufAllocateInfo{};
 // 			cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -362,7 +363,7 @@ namespace vks
 // 			cmdBufAllocateInfo.level = level;
 // 			cmdBufAllocateInfo.commandBufferCount = 1;
 //
-// 			VkCommandBuffer cmdBuffer;
+// 			SDL_GPUCommandBuffer* cmdBuffer;
 // 			VK_CHECK_RESULT(vkAllocateCommandBuffers(logicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 //
 // 			// If requested, also start recording for the new command buffer
@@ -375,7 +376,7 @@ namespace vks
 // 			return cmdBuffer;
 // 		}
 //
-// 		void beginCommandBuffer(VkCommandBuffer commandBuffer)
+// 		void beginCommandBuffer(SDL_GPUCommandBuffer* commandBuffer)
 // 		{
 // 			VkCommandBufferBeginInfo commandBufferBI{};
 // 			commandBufferBI.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -392,7 +393,7 @@ namespace vks
 // 		* @note The queue that the command buffer is submitted to must be from the same family index as the pool it was allocated from
 // 		* @note Uses a fence to ensure command buffer has finished executing
 // 		*/
-// 		void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true)
+// 		void flushCommandBuffer(SDL_GPUCommandBuffer* commandBuffer, vks::DummyQueue* queue, bool free = true)
 // 		{
 // 			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 //

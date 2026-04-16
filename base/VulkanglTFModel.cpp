@@ -78,7 +78,7 @@ namespace vkglTF
 	// }
 	//
 	// // Loads the image for this texture. Supports both glTF's web formats (jpg, png, embedded and external files) as well as external KTX2 files with basis universal texture compression
-	// void Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, TextureSampler textureSampler, vks::VulkanDevice *device, VkQueue copyQueue)
+	// void Texture::fromglTfImage(tinygltf::Image &gltfimage, std::string path, TextureSampler textureSampler, vks::VulkanDevice *device, vks::DummyQueue* copyQueue)
 	// {
 	// 	this->device = device;
 	//
@@ -238,7 +238,7 @@ namespace vkglTF
 	// 		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
 	// 		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 	//
-	// 		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 		VkImageSubresourceRange subresourceRange = {};
 	// 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -380,7 +380,7 @@ namespace vkglTF
 	// 		VK_CHECK_RESULT(vkAllocateMemory(device->logicalDevice, &memAllocInfo, nullptr, &deviceMemory));
 	// 		VK_CHECK_RESULT(vkBindImageMemory(device->logicalDevice, image, deviceMemory, 0));
 	//
-	// 		VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 		VkImageSubresourceRange subresourceRange = {};
 	// 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -428,7 +428,7 @@ namespace vkglTF
 	// 		vkDestroyBuffer(device->logicalDevice, stagingBuffer, nullptr);
 	//
 	// 		// Generate the mip chain (glTF uses jpg and png, so we need to create this manually)
-	// 		VkCommandBuffer blitCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 		SDL_GPUCommandBuffer* blitCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	// 		for (uint32_t i = 1; i < mipLevels; i++) {
 	// 			VkImageBlit imageBlit{};
 	//
@@ -1045,7 +1045,7 @@ namespace vkglTF
 	// 	}
 	// }
 	//
-	// void Model::loadTextures(tinygltf::Model &gltfModel, vks::VulkanDevice *device, VkQueue transferQueue)
+	// void Model::loadTextures(tinygltf::Model &gltfModel, vks::VulkanDevice *device, vks::DummyQueue* transferQueue)
 	// {
 	// 	for (tinygltf::Texture &tex : gltfModel.textures) {
 	// 		int source = tex.source;
@@ -1073,7 +1073,7 @@ namespace vkglTF
 	// 	}
 	// }
 	//
-	// VkSamplerAddressMode Model::getVkWrapMode(int32_t wrapMode)
+	// SDL_GPUSamplerAddressMode Model::getVkWrapMode(int32_t wrapMode)
 	// {
 	// 	switch (wrapMode) {
 	// 	case -1:
@@ -1089,7 +1089,7 @@ namespace vkglTF
 	// 	return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	// }
 	//
-	// VkFilter Model::getVkFilterMode(int32_t filterMode)
+	// SDL_GPUFilter Model::getVkFilterMode(int32_t filterMode)
 	// {
 	// 	switch (filterMode) {
 	// 	case -1:
@@ -1344,7 +1344,7 @@ namespace vkglTF
 	// 	}
 	// }
 	//
-	// void Model::loadFromFile(std::string filename, vks::VulkanDevice* device, VkQueue transferQueue, float scale)
+	// void Model::loadFromFile(std::string filename, vks::VulkanDevice* device, vks::DummyQueue* transferQueue, float scale)
 	// {
 	// 	tinygltf::Model gltfModel;
 	// 	tinygltf::TinyGLTF gltfContext;
@@ -1477,7 +1477,7 @@ namespace vkglTF
 	// 	}
 	//
 	// 	// Copy from staging buffers
-	// 	VkCommandBuffer copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+	// 	SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 	//
 	// 	VkBufferCopy copyRegion = {};
 	//
@@ -1504,7 +1504,7 @@ namespace vkglTF
 	// 	getSceneDimensions();
 	// }
 	//
-	// void Model::drawNode(Node *node, VkCommandBuffer commandBuffer)
+	// void Model::drawNode(Node *node, SDL_GPUCommandBuffer* commandBuffer)
 	// {
 	// 	if (node->mesh) {
 	// 		for (Primitive *primitive : node->mesh->primitives) {
@@ -1516,7 +1516,7 @@ namespace vkglTF
 	// 	}
 	// }
 	//
-	// void Model::draw(VkCommandBuffer commandBuffer)
+	// void Model::draw(SDL_GPUCommandBuffer* commandBuffer)
 	// {
 	// 	const VkDeviceSize offsets[1] = { 0 };
 	// 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer, offsets);
