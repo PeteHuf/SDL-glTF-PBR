@@ -10,14 +10,11 @@
 #include <array>
 #include <map>
 
-#include "vulkan/vulkan.h"
+//#include "vulkan/vulkan.h" // PETEHUF_TODO: remove
 #include "imgui/imgui.h"
 #include "VulkanDevice.hpp"
 #include "VulkanUtils.hpp"
 #include "VulkanTexture.hpp"
-#if defined(__ANDROID__)
-#include <android/asset_manager.h>
-#endif
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -27,15 +24,15 @@
 struct UI {
 private:
 	SDL_GPUDevice* device;
-	VkDevice device_VULKAN;
+	//VkDevice device_VULKAN;
 public:
-	Buffer vertexBuffer, indexBuffer;
-	vks::Texture2D fontTexture;
-	VkPipelineLayout pipelineLayout;
-	VkPipeline pipeline;
-	VkDescriptorPool descriptorPool;
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkDescriptorSet descriptorSet;
+	// Buffer vertexBuffer, indexBuffer;
+	// vks::Texture2D fontTexture;
+	// VkPipelineLayout pipelineLayout;
+	// VkPipeline pipeline;
+	// VkDescriptorPool descriptorPool;
+	// VkDescriptorSetLayout descriptorSetLayout;
+	// VkDescriptorSet descriptorSet;
 	float updateTimer = 0.0f;
 
 	struct PushConstBlock {
@@ -282,85 +279,85 @@ public:
 		// vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 	}
 
-	void draw(VkCommandBuffer cmdBuffer) {
-		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
-
-		const VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer.buffer, offsets);
-		vkCmdBindIndexBuffer(cmdBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-
-		vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(UI::PushConstBlock), &pushConstBlock);
-
-		ImDrawData* imDrawData = ImGui::GetDrawData();
-		int32_t vertexOffset = 0;
-		int32_t indexOffset = 0;
-		for (int32_t j = 0; j < imDrawData->CmdListsCount; j++) {
-			const ImDrawList* cmd_list = imDrawData->CmdLists[j];
-			for (int32_t k = 0; k < cmd_list->CmdBuffer.Size; k++) {
-				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[k];
-				VkRect2D scissorRect;
-				scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
-				scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
-				scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
-				scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
-				vkCmdSetScissor(cmdBuffer, 0, 1, &scissorRect);
-				vkCmdDrawIndexed(cmdBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
-				indexOffset += pcmd->ElemCount;
-			}
-			vertexOffset += cmd_list->VtxBuffer.Size;
-		}
-	}
-
-	template<typename T>
-	bool checkbox(const char* caption, T *value) {
-		bool val = (*value == 1);
-		bool res = ImGui::Checkbox(caption, &val);
-		*value = val;
-		return res;
-	}
-	bool header(const char *caption) {
-		return ImGui::CollapsingHeader(caption, ImGuiTreeNodeFlags_DefaultOpen);
-	}
-	bool slider(const char* caption, float* value, float min, float max) {
-		return ImGui::SliderFloat(caption, value, min, max);
-	}
-	bool combo(const char *caption, int32_t *itemindex, std::vector<std::string> items) {
-		if (items.empty()) {
-			return false;
-		}
-		std::vector<const char*> charitems;
-		charitems.reserve(items.size());
-		for (size_t i = 0; i < items.size(); i++) {
-			charitems.push_back(items[i].c_str());
-		}
-		uint32_t itemCount = static_cast<uint32_t>(charitems.size());
-		return ImGui::Combo(caption, itemindex, &charitems[0], itemCount, itemCount);
-	}
-	bool combo(const char *caption, std::string &selectedkey, std::map<std::string, std::string> items) {
-		bool selectionChanged = false;
-		if (ImGui::BeginCombo(caption, selectedkey.c_str())) {
-			for (auto it = items.begin(); it != items.end(); ++it) {
-				const bool isSelected = it->first == selectedkey;
-				if (ImGui::Selectable(it->first.c_str(), isSelected)) {
-					selectionChanged = it->first != selectedkey;
-					selectedkey = it->first;
-				}
-				if (isSelected) {
-					ImGui::SetItemDefaultFocus();
-				}
-			}
-			ImGui::EndCombo();
-		}
-		return selectionChanged;
-	}
-	bool button(const char *caption) {
-		return ImGui::Button(caption);
-	}
-	void text(const char *formatstr, ...) {
-		va_list args;
-		va_start(args, formatstr);
-		ImGui::TextV(formatstr, args);
-		va_end(args);
-	}
+	// void draw(VkCommandBuffer cmdBuffer) {
+	// 	vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	// 	vkCmdBindDescriptorSets(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
+	//
+	// 	const VkDeviceSize offsets[1] = { 0 };
+	// 	vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &vertexBuffer.buffer, offsets);
+	// 	vkCmdBindIndexBuffer(cmdBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+	//
+	// 	vkCmdPushConstants(cmdBuffer, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(UI::PushConstBlock), &pushConstBlock);
+	//
+	// 	ImDrawData* imDrawData = ImGui::GetDrawData();
+	// 	int32_t vertexOffset = 0;
+	// 	int32_t indexOffset = 0;
+	// 	for (int32_t j = 0; j < imDrawData->CmdListsCount; j++) {
+	// 		const ImDrawList* cmd_list = imDrawData->CmdLists[j];
+	// 		for (int32_t k = 0; k < cmd_list->CmdBuffer.Size; k++) {
+	// 			const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[k];
+	// 			VkRect2D scissorRect;
+	// 			scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
+	// 			scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
+	// 			scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
+	// 			scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
+	// 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissorRect);
+	// 			vkCmdDrawIndexed(cmdBuffer, pcmd->ElemCount, 1, indexOffset, vertexOffset, 0);
+	// 			indexOffset += pcmd->ElemCount;
+	// 		}
+	// 		vertexOffset += cmd_list->VtxBuffer.Size;
+	// 	}
+	// }
+	//
+	// template<typename T>
+	// bool checkbox(const char* caption, T *value) {
+	// 	bool val = (*value == 1);
+	// 	bool res = ImGui::Checkbox(caption, &val);
+	// 	*value = val;
+	// 	return res;
+	// }
+	// bool header(const char *caption) {
+	// 	return ImGui::CollapsingHeader(caption, ImGuiTreeNodeFlags_DefaultOpen);
+	// }
+	// bool slider(const char* caption, float* value, float min, float max) {
+	// 	return ImGui::SliderFloat(caption, value, min, max);
+	// }
+	// bool combo(const char *caption, int32_t *itemindex, std::vector<std::string> items) {
+	// 	if (items.empty()) {
+	// 		return false;
+	// 	}
+	// 	std::vector<const char*> charitems;
+	// 	charitems.reserve(items.size());
+	// 	for (size_t i = 0; i < items.size(); i++) {
+	// 		charitems.push_back(items[i].c_str());
+	// 	}
+	// 	uint32_t itemCount = static_cast<uint32_t>(charitems.size());
+	// 	return ImGui::Combo(caption, itemindex, &charitems[0], itemCount, itemCount);
+	// }
+	// bool combo(const char *caption, std::string &selectedkey, std::map<std::string, std::string> items) {
+	// 	bool selectionChanged = false;
+	// 	if (ImGui::BeginCombo(caption, selectedkey.c_str())) {
+	// 		for (auto it = items.begin(); it != items.end(); ++it) {
+	// 			const bool isSelected = it->first == selectedkey;
+	// 			if (ImGui::Selectable(it->first.c_str(), isSelected)) {
+	// 				selectionChanged = it->first != selectedkey;
+	// 				selectedkey = it->first;
+	// 			}
+	// 			if (isSelected) {
+	// 				ImGui::SetItemDefaultFocus();
+	// 			}
+	// 		}
+	// 		ImGui::EndCombo();
+	// 	}
+	// 	return selectionChanged;
+	// }
+	// bool button(const char *caption) {
+	// 	return ImGui::Button(caption);
+	// }
+	// void text(const char *formatstr, ...) {
+	// 	va_list args;
+	// 	va_start(args, formatstr);
+	// 	ImGui::TextV(formatstr, args);
+	// 	va_end(args);
+	// }
 };

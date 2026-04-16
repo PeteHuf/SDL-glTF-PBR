@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "vulkan/vulkan.h"
+//#include "vulkan/vulkan.h" // PETEHUF_TODO: remove
 
 
 #define VK_CHECK_RESULT(f)																				\

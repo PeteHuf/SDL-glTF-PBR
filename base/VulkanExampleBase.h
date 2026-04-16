@@ -30,7 +30,7 @@
 #include <array>
 #include <numeric>
 
-#include "vulkan/vulkan.h"
+//#include "vulkan/vulkan.h" // PETEHUF_TODO: remove
 
 #include "macros.h"
 #include "camera.hpp"
@@ -49,47 +49,47 @@
 class VulkanExampleBase
 {
 private:	
-	float fpsTimer = 0.0f;
-	uint32_t frameCounter = 0;
-	uint32_t destWidth;
-	uint32_t destHeight;
-	bool resizing = false;
+	// float fpsTimer = 0.0f;
+	// uint32_t frameCounter = 0;
+	// uint32_t destWidth;
+	// uint32_t destHeight;
+	// bool resizing = false;
 	void handleMouseMove(int32_t x, int32_t y);
-	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallback;
-	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback;
-	VkDebugReportCallbackEXT debugReportCallback;
-	struct MultisampleTarget {
-		struct {
-			VkImage image;
-			VkImageView view;
-			VkDeviceMemory memory;
-		} color;
-		struct {
-			VkImage image;
-			VkImageView view;
-			VkDeviceMemory memory;
-		} depth;
-	} multisampleTarget;
+	// PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallback;
+	// PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallback;
+	// VkDebugReportCallbackEXT debugReportCallback;
+	// struct MultisampleTarget {
+	// 	struct {
+	// 		VkImage image;
+	// 		VkImageView view;
+	// 		VkDeviceMemory memory;
+	// 	} color;
+	// 	struct {
+	// 		VkImage image;
+	// 		VkImageView view;
+	// 		VkDeviceMemory memory;
+	// 	} depth;
+	// } multisampleTarget;
 protected:
-	VkInstance instance;
-	VkPhysicalDevice physicalDevice;
-	VkPhysicalDeviceProperties deviceProperties;
-	VkPhysicalDeviceFeatures deviceFeatures;
-	VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
+	// VkInstance instance;
+	// VkPhysicalDevice physicalDevice;
+	// VkPhysicalDeviceProperties deviceProperties;
+	// VkPhysicalDeviceFeatures deviceFeatures;
+	// VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
 	SDL_GPUDevice* device;
-	VkDevice device_VULKAN; // PETEHUF_TODO: remove
-	vks::VulkanDevice *vulkanDevice;
-	VkQueue queue;
-	VkFormat depthFormat;
-	VkCommandPool cmdPool;
-	VkRenderPass renderPass;
-	std::vector<VkFramebuffer>frameBuffers;
+	// VkDevice device_VULKAN; // PETEHUF_TODO: remove
+	// vks::VulkanDevice *vulkanDevice;
+	// VkQueue queue;
+	// VkFormat depthFormat;
+	// VkCommandPool cmdPool;
+	// VkRenderPass renderPass;
+	// std::vector<VkFramebuffer>frameBuffers;
 	uint32_t imageIndex = 0;
-	VkDescriptorPool descriptorPool;
-	VkPipelineCache pipelineCache;
+	// VkDescriptorPool descriptorPool;
+	// VkPipelineCache pipelineCache;
 	VulkanSwapChain swapChain;
-	std::string title = "Vulkan Example";
-	std::string name = "vulkanExample";
+	std::string title = "SDL3 GPU Example";
+	std::string name = "sdl3GpuExample";
 	void windowResize();
 public: 
 	static std::vector<const char*> args;
@@ -106,21 +106,15 @@ public:
 		bool validation = false;
 		bool fullscreen = false;
 		bool vsync = false;
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-		// MSAA is costly on Android and barely visible due to high resolution displays, so disable b default
-		bool multiSampling = false;
-		VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT;
-#else
 		bool multiSampling = true;
-		VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_4_BIT;
-#endif
+		//VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_4_BIT;
 	} settings;
 	
-	struct DepthStencil {
-		VkImage image;
-		VkDeviceMemory mem;
-		VkImageView view;
-	} depthStencil;
+	// struct DepthStencil {
+	// 	VkImage image;
+	// 	VkDeviceMemory mem;
+	// 	VkImageView view;
+	// } depthStencil;
 
 	struct GamePadState {
 		glm::vec2 axisLeft = glm::vec2(0.0f);
@@ -145,7 +139,7 @@ public:
 	
 	void initVulkan();
 
-	virtual VkResult createInstance(bool enableValidation);
+	//virtual VkResult createInstance(bool enableValidation);
 	virtual void render() = 0;
 	virtual void windowResized();
 	virtual void setupFrameBuffer();
