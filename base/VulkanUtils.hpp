@@ -16,11 +16,6 @@
 #include <map>
 #include "vulkan/vulkan.h"
 #include "VulkanDevice.hpp"
-#if defined(__ANDROID__)
-#include <android/asset_manager.h>
-#elif defined(__linux__)
-#include <dirent.h>
-#endif
 
 /*
 	Vulkan buffer object
@@ -121,20 +116,6 @@ VkPipelineShaderStageCreateInfo loadShader(VkDevice device, std::string filename
 
 void readDirectory(const std::string& directory, const std::string &extension, std::map<std::string, std::string> &filelist, bool recursive)
 {
-#if defined(VK_USE_PLATFORM_ANDROID_KHR)
-	AAssetDir* assetDir = AAssetManager_openDir(androidApp->activity->assetManager, directory.c_str());
-	AAssetDir_rewind(assetDir);
-	const char* assetName;
-	while ((assetName = AAssetDir_getNextFileName(assetDir)) != 0) {
-		std::string filename(assetName);
-		if (filename.find(extension) == std::string::npos) {
-			continue;
-		}
-		filename.erase(filename.find_last_of("."), std::string::npos);
-		filelist[filename] = directory + "/" + assetName;
-	}
-	AAssetDir_close(assetDir);
-#elif defined(VK_USE_PLATFORM_WIN32_KHR)
 	std::string searchpattern(directory + "/*" + extension);
 	WIN32_FIND_DATA data;
 	HANDLE hFind;
@@ -163,27 +144,4 @@ void readDirectory(const std::string& directory, const std::string &extension, s
 			FindClose(hFind);
 		}
 	}
-#elif defined(__linux__)
-	struct dirent *entry;
-	DIR *dir = opendir(directory.c_str());
-	if (dir == NULL) {
-		return;
-	}
-	while ((entry = readdir(dir)) != NULL) {
-		if (entry->d_type == DT_REG) {
-			std::string filename(entry->d_name);
-			if (filename.find(extension) != std::string::npos) {
-				filename.erase(filename.find_last_of("."), std::string::npos);
-				filelist[filename] = directory + "/" + entry->d_name;
-			}
-		}
-		if (recursive && (entry->d_type == DT_DIR)) {
-			std::string subdir = directory + "/" + entry->d_name;
-			if ((strcmp(entry->d_name, ".") != 0) && (strcmp(entry->d_name, "..") != 0)) {
-				readDirectory(subdir, extension, filelist, recursive);
-			}
-		}
-	}
-	closedir(dir);
-#endif
 }
