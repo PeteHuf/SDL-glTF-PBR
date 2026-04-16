@@ -8,9 +8,6 @@
 
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#if defined(__ANDROID__)
-#define TINYGLTF_ANDROID_LOAD_FROM_ASSETS
-#endif
 #define STBI_MSC_SECURE_CRT
 
 #include "VulkanglTFModel.h"

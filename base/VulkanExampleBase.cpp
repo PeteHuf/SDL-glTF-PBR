@@ -24,11 +24,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageCallback(VkDebugReportFlagsEXT flags,
 	}
 	std::stringstream debugMessage;
 	debugMessage << prefix << " [" << pLayerPrefix << "] Code " << msgCode << " : " << pMsg;
-#if defined(__ANDROID__)
-	LOGD("%s", debugMessage.str().c_str());
-#else
-	std::cout << debugMessage.str() << "\n";
-#endif
+	std::cout << debugMessage.str() << "\n"; // PETEHUF_TODO: use SDL_LOG
 	fflush(stdout);
 	return VK_FALSE;
 }

@@ -10,22 +10,7 @@
 
 #include "vulkan/vulkan.h"
 
-#if defined(__ANDROID__)
-#include "VulkanAndroid.h"
-#endif
 
-
-#if defined(__ANDROID__)
-#define VK_CHECK_RESULT(f)																				\
-{																										\
-	VkResult res = (f);																					\
-	if (res != VK_SUCCESS)																				\
-	{																									\
-		LOGE("Fatal : VkResult is \" %d \" in %s at line %d", res, __FILE__, __LINE__);					\
-		assert(res == VK_SUCCESS);																		\
-	}																									\
-}
-#else
 #define VK_CHECK_RESULT(f)																				\
 {																										\
 	VkResult res = (f);																					\
@@ -35,7 +20,6 @@
 		assert(res == VK_SUCCESS);																		\
 	}																									\
 }
-#endif
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
 {                                                                       \

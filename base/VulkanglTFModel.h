@@ -35,11 +35,6 @@
 
 #define TINYGLTF_NO_STB_IMAGE_WRITE
 
-#if defined(__ANDROID__)
-#define TINYGLTF_ANDROID_LOAD_FROM_ASSETS
-#include <android/asset_manager.h>
-#endif
-
 #include "tiny_gltf.h"
 
 // Changing this value here also requires changing it in the vertex shader
