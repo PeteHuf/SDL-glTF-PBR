@@ -41,6 +41,9 @@ TestResult.xml
 [Rr]eleasePS/
 dlldata.c
 
+# CLion build
+cmake-build-debug-visual-studio/
+
 *_i.c
 *_p.c
 *_i.h

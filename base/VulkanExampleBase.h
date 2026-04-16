@@ -49,10 +49,10 @@
 class VulkanExampleBase
 {
 private:	
-	// float fpsTimer = 0.0f;
-	// uint32_t frameCounter = 0;
-	// uint32_t destWidth;
-	// uint32_t destHeight;
+	float fpsTimer = 0.0f;
+	uint32_t frameCounter = 0;
+	uint32_t destWidth;
+	uint32_t destHeight;
 	// bool resizing = false;
 	void handleMouseMove(int32_t x, int32_t y);
 	// PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallback;

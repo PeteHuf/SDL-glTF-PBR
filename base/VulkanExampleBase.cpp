@@ -641,7 +641,7 @@ SDL_AppResult VulkanExampleBase::handleMessages(void* appstate, SDL_Event* event
 	if (event->type == SDL_EVENT_QUIT ||
 		(event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event->window.windowID == SDL_GetWindowID(window))) {
 		return SDL_APP_SUCCESS;
-		}
+	}
 	else if (event->type == SDL_EVENT_KEY_DOWN) {
 		if (event->key.key == SDLK_RETURN && (event->key.mod & SDL_KMOD_ALT) != 0) {
 			// toggle fullscreen
@@ -651,139 +651,92 @@ SDL_AppResult VulkanExampleBase::handleMessages(void* appstate, SDL_Event* event
 				SDL_Log("Failed to toggle fullscreen: %s", SDL_GetError());
 			}
 		}
+		else if (event->key.key == SDLK_P) {
+			paused = !paused;
+		}
+		else if (event->key.key == SDLK_ESCAPE) {
+			return SDL_APP_SUCCESS;
+		}
+
+		if (camera.firstperson) {
+			if (event->key.key == SDLK_W) {
+				camera.keys.up = true;
+			}
+			else if (event->key.key == SDLK_S) {
+				camera.keys.down = true;
+			}
+			else if (event->key.key == SDLK_A) {
+				camera.keys.left = true;
+			}
+			else if (event->key.key == SDLK_D) {
+				camera.keys.right = true;
+			}
+		}
 	}
-
-	return SDL_APP_CONTINUE;
-
-
-	// PETEHUF_TODO: impl
-
-	// switch (uMsg)
-	// {
-	// case WM_CLOSE:
-	// 	prepared = false;
-	// 	DestroyWindow(hWnd);
-	// 	PostQuitMessage(0);
-	// 	break;
-	// case WM_PAINT:
-	// 	ValidateRect(window, NULL);
-	// 	break;
-	// case WM_KEYDOWN:
-	// 	switch (wParam)
-	// 	{
-	// 	case KEY_P:
-	// 		paused = !paused;
-	// 		break;
-	// 	case KEY_ESCAPE:
-	// 		PostQuitMessage(0);
-	// 		break;
-	// 	}
-	//
-	// 	if (camera.firstperson)
-	// 	{
-	// 		switch (wParam)
-	// 		{
-	// 		case KEY_W:
-	// 			camera.keys.up = true;
-	// 			break;
-	// 		case KEY_S:
-	// 			camera.keys.down = true;
-	// 			break;
-	// 		case KEY_A:
-	// 			camera.keys.left = true;
-	// 			break;
-	// 		case KEY_D:
-	// 			camera.keys.right = true;
-	// 			break;
-	// 		}
-	// 	}
-	//
-	// 	break;
-	// case WM_KEYUP:
-	// 	if (camera.firstperson)
-	// 	{
-	// 		switch (wParam)
-	// 		{
-	// 		case KEY_W:
-	// 			camera.keys.up = false;
-	// 			break;
-	// 		case KEY_S:
-	// 			camera.keys.down = false;
-	// 			break;
-	// 		case KEY_A:
-	// 			camera.keys.left = false;
-	// 			break;
-	// 		case KEY_D:
-	// 			camera.keys.right = false;
-	// 			break;
-	// 		}
-	// 	}
-	// 	break;
-	// case WM_LBUTTONDOWN:
-	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-	// 	mouseButtons.left = true;
-	// 	break;
-	// case WM_RBUTTONDOWN:
-	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-	// 	mouseButtons.right = true;
-	// 	break;
-	// case WM_MBUTTONDOWN:
-	// 	mousePos = glm::vec2((float)LOWORD(lParam), (float)HIWORD(lParam));
-	// 	mouseButtons.middle = true;
-	// 	break;
-	// case WM_LBUTTONUP:
-	// 	mouseButtons.left = false;
-	// 	break;
-	// case WM_RBUTTONUP:
-	// 	mouseButtons.right = false;
-	// 	break;
-	// case WM_MBUTTONUP:
-	// 	mouseButtons.middle = false;
-	// 	break;
-	// case WM_MOUSEWHEEL:
-	// {
-	// 	short wheelDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-	// 	camera.translate(glm::vec3(0.0f, 0.0f, -(float)wheelDelta * 0.005f * camera.movementSpeed));
-	// 	break;
-	// }
-	// case WM_MOUSEMOVE:
-	// {
-	// 	handleMouseMove(LOWORD(lParam), HIWORD(lParam));
-	// 	break;
-	// }
-	// case WM_SIZE:
-	// 	if ((prepared) && (wParam != SIZE_MINIMIZED)) {
-	// 		if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))) {
-	// 			destWidth = LOWORD(lParam);
-	// 			destHeight = HIWORD(lParam);
-	// 			windowResize();
-	// 		}
-	// 	}
-	// 	break;
+	else if (event->type == SDL_EVENT_KEY_UP) {
+		if (camera.firstperson) {
+			if (event->key.key == SDLK_W) {
+				camera.keys.up = false;
+			}
+			else if (event->key.key == SDLK_S) {
+				camera.keys.down = false;
+			}
+			else if (event->key.key == SDLK_A) {
+				camera.keys.left = false;
+			}
+			else if (event->key.key == SDLK_D) {
+				camera.keys.right = false;
+			}
+		}
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_LEFT) {
+		mousePos = glm::vec2((float)event->button.x, (float)event->button.y);
+		mouseButtons.left = true;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_RIGHT) {
+		mousePos = glm::vec2((float)event->button.x, (float)event->button.y);
+		mouseButtons.right = true;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN && event->button.button == SDL_BUTTON_MIDDLE) {
+		mousePos = glm::vec2((float)event->button.x, (float)event->button.y);
+		mouseButtons.middle = true;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP && event->button.button == SDL_BUTTON_LEFT) {
+		mouseButtons.left = false;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP && event->button.button == SDL_BUTTON_RIGHT) {
+		mouseButtons.right = false;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_BUTTON_UP && event->button.button == SDL_BUTTON_MIDDLE) {
+		mouseButtons.middle = false;
+	}
+	else if (event->type == SDL_EVENT_MOUSE_WHEEL) {
+		Sint32 wheelDelta = event->wheel.integer_y;
+		camera.translate(glm::vec3(0.0f, 0.0f, -(float)wheelDelta * 0.005f * camera.movementSpeed));
+	}
+	else if (event->type == SDL_EVENT_MOUSE_MOTION) {
+		handleMouseMove(static_cast<int32_t>(event->motion.x), static_cast<int32_t>(event->motion.y));
+	}
+	else if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+		const SDL_WindowFlags windowFlags = SDL_GetWindowFlags(window);
+		const bool is_minimized = (windowFlags & SDL_WINDOW_MINIMIZED) == SDL_WINDOW_MINIMIZED;
+		if ((prepared) && !is_minimized) {
+			//if ((resizing) || ((wParam == SIZE_MAXIMIZED) || (wParam == SIZE_RESTORED))) { // PETEHUF_TODO: eval
+				destWidth = event->window.data1;
+				destHeight = event->window.data2;
+				windowResize();
+			//}
+		}
+	}
 	// case WM_ENTERSIZEMOVE:
 	// 	resizing = true;
 	// 	break;
 	// case WM_EXITSIZEMOVE:
 	// 	resizing = false;
 	// 	break;
-	// case WM_DROPFILES:
-	// 	{
-	// 		std::string fname;
-	// 		HDROP hDrop = reinterpret_cast<HDROP>(wParam);
-	// 		// extract files here
-	// 		char filename[MAX_PATH];
-	// 		uint32_t count = DragQueryFileA(hDrop, -1, nullptr, 0);
-	// 		for (uint32_t i = 0; i < count; ++i) {
-	// 			if (DragQueryFileA(hDrop, i, filename, MAX_PATH)) {
-	// 				fname = filename;
-	// 			}
-	// 			break;
-	// 		}
-	// 		DragFinish(hDrop);
-	// 		fileDropped(fname);
-	// 		break;
-	// 	}
-	// }
+	else if (event->type == SDL_EVENT_DROP_FILE) {
+		fileDropped(event->drop.data);
+	}
 
 	return SDL_APP_CONTINUE;
 }
@@ -971,7 +924,7 @@ void VulkanExampleBase::windowResize()
 	}
 	prepared = false;
 
-	//vkDeviceWaitIdle(device_VULKAN);
+	SDL_WaitForGPUIdle(device);
 	// width = destWidth;
 	// height = destHeight;
 	setupSwapChain();
@@ -990,7 +943,7 @@ void VulkanExampleBase::windowResize()
 	// 	vkDestroyFramebuffer(device_VULKAN, frameBuffers[i], nullptr);
 	// }
 	setupFrameBuffer();
-	//vkDeviceWaitIdle(device_VULKAN);
+	SDL_WaitForGPUIdle(device);
 
 	camera.updateAspectRatio((float)width / (float)height);
 	windowResized();

@@ -1876,9 +1876,9 @@ public:
 
 	void windowResized()
 	{
-		// vkDeviceWaitIdle(device_VULKAN);
-		// updateUniformData();
-		// updateOverlay();
+		SDL_WaitForGPUIdle(device);
+		updateUniformData();
+		updateOverlay();
 	}
 
 	void prepare()
@@ -2084,14 +2084,14 @@ public:
 // #endif
 //
 // 				if (!filename.empty()) {
-// 					vkDeviceWaitIdle(device_VULKAN);
+// 					SDL_WaitForGPUIdle(device);
 // 					loadScene(filename);
 // 					setupDescriptors();
 // 				}
 // 			}
 //
 // 			if (ui->combo("Environment##env", selectedEnvironment, environments)) {
-// 				vkDeviceWaitIdle(device_VULKAN);
+// 				SDL_WaitForGPUIdle(device);
 // 				loadEnvironment(environments[selectedEnvironment]);
 // 				setupDescriptors();
 // 			}
@@ -2153,7 +2153,7 @@ public:
 // 			bool updateBuffers = (ui->vertexBuffer.buffer == VK_NULL_HANDLE) || (ui->vertexBuffer.count != imDrawData->TotalVtxCount) || (ui->indexBuffer.buffer == VK_NULL_HANDLE) || (ui->indexBuffer.count != imDrawData->TotalIdxCount);
 //
 // 			if (updateBuffers) {
-// 				vkDeviceWaitIdle(device_VULKAN);
+// 				SDL_WaitForGPUIdle(device);
 // 				if (ui->vertexBuffer.buffer) {
 // 					ui->vertexBuffer.destroy();
 // 				}
@@ -2182,11 +2182,6 @@ public:
 //
 // 		}
 //
-// #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-// 		if (mouseButtons.left) {
-// 			mouseButtons.left = false;
-// 		}
-// #endif
 	}
 
 	virtual void render()
@@ -2262,7 +2257,7 @@ public:
 
 	virtual void fileDropped(std::string filename)
 	{
-		// vkDeviceWaitIdle(device_VULKAN);
+		SDL_WaitForGPUIdle(device);
 		// loadScene(filename);
 		// setupDescriptors();
 	}
