@@ -110,7 +110,7 @@ namespace vkglTF
 			bool metallicRoughness = true;
 			bool specularGlossiness = false;
 		} pbrWorkflows;
-		//VkDescriptorSet descriptorSet = VK_NULL_HANDLE;
+		//VkDescriptorSet descriptorSet = nullptr;
 		int index = 0;
 		bool unlit = false;
 		float emissiveStrength = 1.0f;
@@ -211,14 +211,14 @@ namespace vkglTF
 			glm::vec4 color;
 		};
 
-		// struct Vertices {
-		// 	VkBuffer buffer = VK_NULL_HANDLE;
-		// 	VkDeviceMemory memory;
-		// } vertices;
-		// struct Indices {
-		// 	VkBuffer buffer = VK_NULL_HANDLE;
-		// 	VkDeviceMemory memory;
-		// } indices;
+		struct Vertices {
+			SDL_GPUBuffer* buffer = nullptr;
+			//VkDeviceMemory memory;
+		} vertices;
+		struct Indices {
+			SDL_GPUBuffer* buffer = nullptr;
+			//VkDeviceMemory memory;
+		} indices;
 
 		glm::mat4 aabb;
 

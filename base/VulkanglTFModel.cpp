@@ -181,7 +181,7 @@ namespace vkglTF
 	// 			totalBufferSize += numBlocksOrPixels * bytesPerBlockOrPixel;
 	// 		}
 	//
-	// 		VkBuffer stagingBuffer;
+	// 		SDL_GPUBuffer* stagingBuffer;
 	// 		VkDeviceMemory stagingMemory;
 	// 		VkBufferCreateInfo bufferCreateInfo{};
 	// 		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -336,7 +336,7 @@ namespace vkglTF
 	// 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	// 		VkMemoryRequirements memReqs{};
 	//
-	// 		VkBuffer stagingBuffer;
+	// 		SDL_GPUBuffer* stagingBuffer;
 	// 		VkDeviceMemory stagingMemory;
 	//
 	// 		VkBufferCreateInfo bufferCreateInfo{};
@@ -728,17 +728,17 @@ namespace vkglTF
 	// }
 	//
 	// // Model
-	// void Model::destroy(VkDevice device)
+	// void Model::destroy(SDL_GPUDevice* device)
 	// {
-	// 	if (vertices.buffer != VK_NULL_HANDLE) {
+	// 	if (vertices.buffer != nullptr) {
 	// 		vkDestroyBuffer(device, vertices.buffer, nullptr);
 	// 		vkFreeMemory(device, vertices.memory, nullptr);
-	// 		vertices.buffer = VK_NULL_HANDLE;
+	// 		vertices.buffer = nullptr;
 	// 	}
-	// 	if (indices.buffer != VK_NULL_HANDLE) {
+	// 	if (indices.buffer != nullptr) {
 	// 		vkDestroyBuffer(device, indices.buffer, nullptr);
 	// 		vkFreeMemory(device, indices.memory, nullptr);
-	// 		indices.buffer = VK_NULL_HANDLE;
+	// 		indices.buffer = nullptr;
 	// 	}
 	// 	for (auto texture : textures) {
 	// 		texture.destroy();
@@ -1434,7 +1434,7 @@ namespace vkglTF
 	// 	assert(vertexBufferSize > 0);
 	//
 	// 	struct StagingBuffer {
-	// 		VkBuffer buffer;
+	// 		SDL_GPUBuffer* buffer;
 	// 		VkDeviceMemory memory;
 	// 	} vertexStaging, indexStaging;
 	//

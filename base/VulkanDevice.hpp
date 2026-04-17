@@ -36,7 +36,7 @@ namespace vks
 		// VkPhysicalDeviceFeatures enabledFeatures;
 		// VkPhysicalDeviceMemoryProperties memoryProperties;
 		// std::vector<VkQueueFamilyProperties> queueFamilyProperties;
-		// VkCommandPool commandPool = VK_NULL_HANDLE;
+		// VkCommandPool commandPool = nullptr;
 		bool requiresStaging = true;
 
 		struct {
@@ -44,7 +44,7 @@ namespace vks
 			uint32_t compute;
 		} queueFamilyIndices;
 
-		// operator VkDevice() { return logicalDevice; };
+		// operator SDL_GPUDevice*() { return logicalDevice; };
 
 		/**
 		* Default constructor
@@ -277,7 +277,7 @@ namespace vks
 // 		*
 // 		* @return VK_SUCCESS if buffer handle and memory have been created and (optionally passed) data has been copied
 // 		*/
-// 		VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer *buffer, VkDeviceMemory *memory, void *data = nullptr, VkDeviceSize *actualBufferSize = nullptr)
+// 		VkResult createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, SDL_GPUBuffer* *buffer, VkDeviceMemory *memory, void *data = nullptr, VkDeviceSize *actualBufferSize = nullptr)
 // 		{
 // 			// Create the buffer handle
 // 			VkBufferCreateInfo bufferCreateInfo{};

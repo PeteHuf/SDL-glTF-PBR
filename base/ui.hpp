@@ -24,7 +24,7 @@
 struct UI {
 private:
 	SDL_GPUDevice* device;
-	//VkDevice device;
+	//SDL_GPUDevice* device;
 public:
 	// Buffer vertexBuffer, indexBuffer;
 	// vks::Texture2D fontTexture;

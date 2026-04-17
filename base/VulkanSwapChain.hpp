@@ -28,9 +28,9 @@ class VulkanSwapChain
 {
 private: 
 	// VkInstance instance;
-	// VkDevice device;
+	// SDL_GPUDevice* device;
 	// VkPhysicalDevice physicalDevice;
-	// VkSurfaceKHR surface = VK_NULL_HANDLE;
+	// VkSurfaceKHR surface = nullptr;
 	// // Function pointers
 	// PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
 	// PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
@@ -44,7 +44,7 @@ private:
 public:
 // 	VkFormat colorFormat;
 // 	VkColorSpaceKHR colorSpace;
-// 	VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+// 	VkSwapchainKHR swapChain = nullptr;
 // 	uint32_t imageCount;
 // 	std::vector<VkImage> images;
 // 	std::vector<SwapChainBuffer> buffers;
@@ -175,7 +175,7 @@ public:
 // 	* @param device Logical representation of the device to create the swapchain for
 // 	*
 // 	*/
-// 	void connect(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice device)
+// 	void connect(VkInstance instance, VkPhysicalDevice physicalDevice, SDL_GPUDevice* device)
 // 	{
 // 		this->instance = instance;
 // 		this->physicalDevice = physicalDevice;
@@ -321,7 +321,7 @@ public:
 //
 // 		// If an existing swap chain is re-created, destroy the old swap chain
 // 		// This also cleans up all the presentable images
-// 		if (oldSwapchain != VK_NULL_HANDLE)
+// 		if (oldSwapchain != nullptr)
 // 		{
 // 			for (uint32_t i = 0; i < imageCount; i++)
 // 			{
@@ -377,7 +377,7 @@ public:
 // 	*/
 // 	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t *imageIndex)
 // 	{
-// 		if (swapChain == VK_NULL_HANDLE) {
+// 		if (swapChain == nullptr) {
 // 			// Probably acquireNextImage() is called just after cleanup() (e.g. window has been terminated on Android).
 // 			// todo : Use a dedicated error code.
 // 			return VK_ERROR_OUT_OF_DATE_KHR;
@@ -393,11 +393,11 @@ public:
 // 	*
 // 	* @param queue Presentation queue for presenting the image
 // 	* @param imageIndex Index of the swapchain image to queue for presentation
-// 	* @param waitSemaphore (Optional) Semaphore that is waited on before the image is presented (only used if != VK_NULL_HANDLE)
+// 	* @param waitSemaphore (Optional) Semaphore that is waited on before the image is presented (only used if != nullptr)
 // 	*
 // 	* @return VkResult of the queue presentation
 // 	*/
-// 	VkResult queuePresent(vks::DummyQueue* queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE)
+// 	VkResult queuePresent(vks::DummyQueue* queue, uint32_t imageIndex, VkSemaphore waitSemaphore = nullptr)
 // 	{
 // 		VkPresentInfoKHR presentInfo = {};
 // 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -406,7 +406,7 @@ public:
 // 		presentInfo.pSwapchains = &swapChain;
 // 		presentInfo.pImageIndices = &imageIndex;
 // 		// Check if a wait semaphore has been specified to wait for before presenting the image
-// 		if (waitSemaphore != VK_NULL_HANDLE)
+// 		if (waitSemaphore != nullptr)
 // 		{
 // 			presentInfo.pWaitSemaphores = &waitSemaphore;
 // 			presentInfo.waitSemaphoreCount = 1;
@@ -420,20 +420,20 @@ public:
 // 	*/
 // 	void cleanup()
 // 	{
-// 		if (swapChain != VK_NULL_HANDLE)
+// 		if (swapChain != nullptr)
 // 		{
 // 			for (uint32_t i = 0; i < imageCount; i++)
 // 			{
 // 				vkDestroyImageView(device, buffers[i].view, nullptr);
 // 			}
 // 		}
-// 		if (surface != VK_NULL_HANDLE)
+// 		if (surface != nullptr)
 // 		{
 // 			fpDestroySwapchainKHR(device, swapChain, nullptr);
 // 			vkDestroySurfaceKHR(instance, surface, nullptr);
 // 		}
-// 		surface = VK_NULL_HANDLE;
-// 		swapChain = VK_NULL_HANDLE;
+// 		surface = nullptr;
+// 		swapChain = nullptr;
 // 	}
 
 };

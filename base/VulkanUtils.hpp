@@ -20,52 +20,52 @@
 /*
 	Vulkan buffer object
 */
-// struct Buffer {
-// 	VkDevice device;
-// 	VkBuffer buffer = VK_NULL_HANDLE;
-// 	VkDeviceMemory memory = VK_NULL_HANDLE;
-// 	VkDescriptorBufferInfo descriptor;
-// 	int32_t count = 0;
-// 	VkDeviceSize actualBufferSize{ 0 };
-// 	void *mapped = nullptr;
-// 	void create(vks::VulkanDevice *device, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, bool map = true) {
-// 		this->device = device->logicalDevice;
-// 		device->createBuffer(usageFlags, memoryPropertyFlags, size, &buffer, &memory, nullptr, &actualBufferSize);
-// 		descriptor = { buffer, 0, size };
-// 		if (map) {
-// 			VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped));
-// 		}
-// 	}
-// 	void destroy() {
-// 		if (mapped) {
-// 			unmap();
-// 		}
-// 		vkDestroyBuffer(device, buffer, nullptr);
-// 		vkFreeMemory(device, memory, nullptr);
-// 		buffer = VK_NULL_HANDLE;
-// 		memory = VK_NULL_HANDLE;
-// 	}
-// 	void map() {
-// 		VK_CHECK_RESULT(vkMapMemory(device, memory, 0, VK_WHOLE_SIZE, 0, &mapped));
-// 	}
-// 	void unmap() {
-// 		if (mapped) {
-// 			vkUnmapMemory(device, memory);
-// 			mapped = nullptr;
-// 		}
-// 	}
-// 	void flush(VkDeviceSize size = VK_WHOLE_SIZE) {
-// 		VkMappedMemoryRange mappedRange{};
-// 		mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-// 		mappedRange.memory = memory;
-// 		mappedRange.size = size;
-// 		VK_CHECK_RESULT(vkFlushMappedMemoryRanges(device, 1, &mappedRange));
-// 	}
-// };
-//
-// VkPipelineShaderStageCreateInfo loadShader(VkDevice device, std::string filename, VkShaderStageFlagBits stage)
-// {
-// 	VkPipelineShaderStageCreateInfo shaderStage{};
+struct Buffer {
+	SDL_GPUDevice* device;
+	SDL_GPUBuffer* buffer = nullptr;
+	// VkDeviceMemory memory = nullptr;
+	// VkDescriptorBufferInfo descriptor;
+	int32_t count = 0;
+	// VkDeviceSize actualBufferSize{ 0 };
+	void *mapped = nullptr;
+	// void create(vks::VulkanDevice *device, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, bool map = true) {
+	// 	// this->device = device->logicalDevice;
+	// 	// device->createBuffer(usageFlags, memoryPropertyFlags, size, &buffer, &memory, nullptr, &actualBufferSize);
+	// 	// descriptor = { buffer, 0, size };
+	// 	// if (map) {
+	// 	// 	VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped));
+	// 	// }
+	// }
+	// void destroy() {
+	// 	// if (mapped) {
+	// 	// 	unmap();
+	// 	// }
+	// 	// vkDestroyBuffer(device, buffer, nullptr);
+	// 	// vkFreeMemory(device, memory, nullptr);
+	// 	// buffer = nullptr;
+	// 	// memory = nullptr;
+	// }
+	// void map() {
+	// 	// VK_CHECK_RESULT(vkMapMemory(device, memory, 0, VK_WHOLE_SIZE, 0, &mapped));
+	// }
+	// void unmap() {
+	// 	// if (mapped) {
+	// 	// 	vkUnmapMemory(device, memory);
+	// 	// 	mapped = nullptr;
+	// 	// }
+	// }
+	// void flush(VkDeviceSize size = VK_WHOLE_SIZE) {
+	// 	// VkMappedMemoryRange mappedRange{};
+	// 	// mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	// 	// mappedRange.memory = memory;
+	// 	// mappedRange.size = size;
+	// 	// VK_CHECK_RESULT(vkFlushMappedMemoryRanges(device, 1, &mappedRange));
+	// }
+};
+
+SDL_GPUShaderCreateInfo loadShader(SDL_GPUDevice* device, std::string filename/*, VkShaderStageFlagBits stage*/)
+{
+	SDL_GPUShaderCreateInfo shaderStage{};
 // 	shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 // 	shaderStage.stage = stage;
 // 	shaderStage.pName = "main";
@@ -106,13 +106,13 @@
 // 	}
 // 	else {
 // 		std::cerr << "Error: Could not open shader file \"" << filename << "\"" << std::endl;
-// 		shaderStage.module = VK_NULL_HANDLE;
+// 		shaderStage.module = nullptr;
 // 	}
 //
 // #endif
-// 	assert(shaderStage.module != VK_NULL_HANDLE);
-// 	return shaderStage;
-// }
+// 	assert(shaderStage.module != nullptr);
+	return shaderStage;
+}
 
 void readDirectory(const std::string& directory, const std::string &extension, std::map<std::string, std::string> &filelist, bool recursive)
 {

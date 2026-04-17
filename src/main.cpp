@@ -77,16 +77,16 @@ public:
 		float debugViewEquation = 0;
 	} shaderValuesParams;
 
-	// VkPipelineLayout pipelineLayout{ VK_NULL_HANDLE };
+	// VkPipelineLayout pipelineLayout{ nullptr };
 	//
 	// std::unordered_map<std::string, VkPipeline> pipelines;
-	// VkPipeline boundPipeline{ VK_NULL_HANDLE };
+	// VkPipeline boundPipeline{ nullptr };
 	//
 	// struct DescriptorSetLayouts {
-	// 	VkDescriptorSetLayout scene{ VK_NULL_HANDLE };
-	// 	VkDescriptorSetLayout material{ VK_NULL_HANDLE };
-	// 	VkDescriptorSetLayout materialBuffer{ VK_NULL_HANDLE };
-	// 	VkDescriptorSetLayout meshDataBuffer{ VK_NULL_HANDLE };
+	// 	VkDescriptorSetLayout scene{ nullptr };
+	// 	VkDescriptorSetLayout material{ nullptr };
+	// 	VkDescriptorSetLayout materialBuffer{ nullptr };
+	// 	VkDescriptorSetLayout meshDataBuffer{ nullptr };
 	// } descriptorSetLayouts;
 	//
 	// struct DescriptorSets {
@@ -141,7 +141,7 @@ public:
 		float emissiveStrength;
 	};
 	// Buffer shaderMaterialBuffer;
-	// VkDescriptorSet descriptorSetMaterials{ VK_NULL_HANDLE };
+	// VkDescriptorSet descriptorSetMaterials{ nullptr };
 
 	struct MeshPushConstantBlock {
 		int32_t meshIndex;
@@ -346,11 +346,11 @@ public:
 	// 	vkglTF::Model &model = models.scene;
 	//
 	// 	vkCmdBindVertexBuffers(currentCB, 0, 1, &model.vertices.buffer, offsets);
-	// 	if (model.indices.buffer != VK_NULL_HANDLE) {
+	// 	if (model.indices.buffer != nullptr) {
 	// 		vkCmdBindIndexBuffer(currentCB, model.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 	// 	}
 	//
-	// 	boundPipeline = VK_NULL_HANDLE;
+	// 	boundPipeline = nullptr;
 	//
 	// 	// Opaque primitives first
 	// 	for (auto node : model.nodes) {
@@ -415,7 +415,7 @@ public:
 		// 	shaderMaterials.push_back(shaderMaterial);
 		// }
 		//
-		// if (shaderMaterialBuffer.buffer != VK_NULL_HANDLE) {
+		// if (shaderMaterialBuffer.buffer != nullptr) {
 		// 	shaderMaterialBuffer.destroy();
 		// }
 		// VkDeviceSize bufferSize = shaderMaterials.size() * sizeof(ShaderMaterial);
@@ -458,7 +458,7 @@ public:
 		// }
 		//
 		// for (auto& shaderMeshDataBuffer : shaderMeshDataBuffers) {
-		// 	if (shaderMeshDataBuffer.buffer != VK_NULL_HANDLE) {
+		// 	if (shaderMeshDataBuffer.buffer != nullptr) {
 		// 		shaderMeshDataBuffer.destroy();
 		// 	}
 		// 	VkDeviceSize bufferSize = shaderMeshData.size() * sizeof(ShaderMeshData);
@@ -2150,7 +2150,7 @@ public:
 // 			VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
 // 			VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
 //
-// 			bool updateBuffers = (ui->vertexBuffer.buffer == VK_NULL_HANDLE) || (ui->vertexBuffer.count != imDrawData->TotalVtxCount) || (ui->indexBuffer.buffer == VK_NULL_HANDLE) || (ui->indexBuffer.count != imDrawData->TotalIdxCount);
+// 			bool updateBuffers = (ui->vertexBuffer.buffer == nullptr) || (ui->vertexBuffer.count != imDrawData->TotalVtxCount) || (ui->indexBuffer.buffer == nullptr) || (ui->indexBuffer.count != imDrawData->TotalIdxCount);
 //
 // 			if (updateBuffers) {
 // 				SDL_WaitForGPUIdle(device);
