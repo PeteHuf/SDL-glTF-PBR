@@ -97,7 +97,7 @@ public:
 // 		io.Fonts->AddFontFromFileTTF("./../data/Roboto-Medium.ttf", 16.0f);
 // #endif
 // 		io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
-// 		fontTexture.loadFromBuffer(fontData, texWidth * texHeight * 4 * sizeof(char), VK_FORMAT_R8G8B8A8_UNORM, texWidth, texHeight, vulkanDevice, queue);
+// 		fontTexture.loadFromBuffer(fontData, texWidth * texHeight * 4 * sizeof(char), SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, texWidth, texHeight, vulkanDevice, queue);
 //
 // 		/*
 // 			Setup
@@ -224,7 +224,7 @@ public:
 // 		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes = {
 // 			{ 0, 0, VK_FORMAT_R32G32_SFLOAT, 0 },
 // 			{ 1, 0, VK_FORMAT_R32G32_SFLOAT, sizeof(float) * 2 },
-// 			{ 2, 0, VK_FORMAT_R8G8B8A8_UNORM, sizeof(float) * 4 },
+// 			{ 2, 0, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, sizeof(float) * 4 },
 // 		};
 // 		VkPipelineVertexInputStateCreateInfo vertexInputStateCI{};
 // 		vertexInputStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

@@ -78,7 +78,7 @@ protected:
 	// VkPhysicalDeviceMemoryProperties deviceMemoryProperties;
 	SDL_GPUDevice* device;
 	vks::VulkanDevice *vulkanDevice;
-	// vks::DummyQueue* queue;
+	vks::DummyQueue* queue;
 	// VkFormat depthFormat;
 	// VkCommandPool cmdPool;
 	// VkRenderPass renderPass;

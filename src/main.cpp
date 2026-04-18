@@ -41,24 +41,24 @@
 class VulkanApplication : public VulkanExampleBase
 {
 public:
-	// struct Textures {
-	// 	vks::TextureCubeMap environmentCube;
-	// 	vks::Texture2D empty;
-	// 	vks::Texture2D lutBrdf;
-	// 	vks::TextureCubeMap irradianceCube;
-	// 	vks::TextureCubeMap prefilteredCube;
-	// } textures;
-	//
-	// struct Models {
-	// 	vkglTF::Model scene;
-	// 	vkglTF::Model skybox;
-	// } models;
-	//
-	// struct UniformBufferSet {
-	// 	Buffer scene;
-	// 	Buffer skybox;
-	// 	Buffer params;
-	// };
+	struct Textures {
+		vks::TextureCubeMap environmentCube;
+		vks::Texture2D empty;
+		vks::Texture2D lutBrdf;
+		vks::TextureCubeMap irradianceCube;
+		vks::TextureCubeMap prefilteredCube;
+	} textures;
+
+	struct Models {
+		vkglTF::Model scene;
+		vkglTF::Model skybox;
+	} models;
+
+	struct UniformBufferSet {
+		Buffer scene;
+		Buffer skybox;
+		Buffer params;
+	};
 
 	struct UBOMatrices {
 		glm::mat4 projection{ 1.0f };
@@ -562,44 +562,43 @@ public:
 
 	void loadAssets()
 	{
-		std::terminate();
-		// struct stat info;
-		// if (stat(assetpath.c_str(), &info) != 0) {
-		// 	std::string msg = "Could not locate asset path in \"" + assetpath + "\".\nMake sure binary is run from correct relative directory!";
-		// 	std::cerr << msg << std::endl;
-		// 	exit(-1);
-		// }
-		//
-		// readDirectory(assetpath + "environments", "ktx", environments, false);
-		//
-		// textures.empty.loadFromFile(assetpath + "textures/empty.ktx", VK_FORMAT_R8G8B8A8_UNORM, vulkanDevice, queue);
-		//
-		// std::string sceneFile = assetpath + "models/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf";
-		// std::string envMapFile = assetpath + "environments/papermill.ktx";
-		// for (size_t i = 0; i < args.size(); i++) {
-		// 	if ((std::string(args[i]).find(".gltf") != std::string::npos) || (std::string(args[i]).find(".glb") != std::string::npos)) {
-		// 		std::ifstream file(args[i]);
-		// 		if (file.good()) {
-		// 			sceneFile = args[i];
-		// 		} else {
-		// 			std::cout << "could not load \"" << args[i] << "\"" << std::endl;
-		// 		}
-		// 	}
-		// 	if (std::string(args[i]).find(".ktx") != std::string::npos) {
-		// 		std::ifstream file(args[i]);
-		// 		if (file.good()) {
-		// 			envMapFile = args[i];
-		// 		}
-		// 		else {
-		// 			std::cout << "could not load \"" << args[i] << "\"" << std::endl;
-		// 		}
-		// 	}
-		// }
-		//
-		// loadScene(sceneFile.c_str());
-		// models.skybox.loadFromFile(assetpath + "models/Box/glTF-Embedded/Box.gltf", vulkanDevice, queue);
-		//
-		// loadEnvironment(envMapFile.c_str());
+		struct stat info;
+		if (stat(assetpath.c_str(), &info) != 0) {
+			std::string msg = "Could not locate asset path in \"" + assetpath + "\".\nMake sure binary is run from correct relative directory!";
+			std::cerr << msg << std::endl;
+			exit(-1);
+		}
+
+		readDirectory(assetpath + "environments", "ktx", environments, false);
+
+		textures.empty.loadFromFile(assetpath + "textures/empty.ktx", SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM, vulkanDevice, queue);
+
+		std::string sceneFile = assetpath + "models/DamagedHelmet/glTF-Embedded/DamagedHelmet.gltf";
+		std::string envMapFile = assetpath + "environments/papermill.ktx";
+		for (size_t i = 0; i < args.size(); i++) {
+			if ((std::string(args[i]).find(".gltf") != std::string::npos) || (std::string(args[i]).find(".glb") != std::string::npos)) {
+				std::ifstream file(args[i]);
+				if (file.good()) {
+					sceneFile = args[i];
+				} else {
+					std::cout << "could not load \"" << args[i] << "\"" << std::endl;
+				}
+			}
+			if (std::string(args[i]).find(".ktx") != std::string::npos) {
+				std::ifstream file(args[i]);
+				if (file.good()) {
+					envMapFile = args[i];
+				}
+				else {
+					std::cout << "could not load \"" << args[i] << "\"" << std::endl;
+				}
+			}
+		}
+
+		loadScene(sceneFile.c_str());
+		models.skybox.loadFromFile(assetpath + "models/Box/glTF-Embedded/Box.gltf", vulkanDevice, queue);
+
+		loadEnvironment(envMapFile.c_str());
 	}
 
 	void setupDescriptors()

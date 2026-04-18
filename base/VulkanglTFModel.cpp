@@ -90,7 +90,7 @@ namespace vkglTF
 		// 	}
 		// }
 		//
-		// VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+		// VkFormat format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
 		//
 		// if (isKtx2) {
 		// 	// Image is KTX2 using basis universal compression. Those images need to be loaded from disk and will be transcoded to a native GPU format
