@@ -378,6 +378,7 @@ public:
 	// The fragment shader then get's the index into this material array from a push constant set per primitive
 	void createMaterialBuffer()
 	{
+		std::terminate();
 		// std::vector<ShaderMaterial> shaderMaterials{};
 		// for (auto& material : models.scene.materials) {
 		// 	ShaderMaterial shaderMaterial{};
@@ -446,6 +447,7 @@ public:
 	// @todo: Update
 	void createMeshDataBuffer()
 	{
+		std::terminate();
 		// std::vector<ShaderMeshData> shaderMeshData{};
 		// for (auto& node : models.scene.linearNodes) {
 		// 	ShaderMeshData meshData{};
@@ -491,6 +493,7 @@ public:
 
 	void updateMeshDataBuffer(uint32_t index)
 	{
+		std::terminate();
 		// // @todo: optimize (no push, use fixed size)
 		// std::vector<ShaderMeshData> shaderMeshData{};
 		// for (auto& node : models.scene.linearNodes) {
@@ -524,6 +527,7 @@ public:
 
 	void loadScene(std::string filename)
 	{
+		std::terminate();
 		// std::cout << "Loading scene from " << filename << std::endl;
 		// models.scene.destroy(device);
 		// animationIndex = 0;
@@ -545,6 +549,7 @@ public:
 
 	void loadEnvironment(std::string filename)
 	{
+		std::terminate();
 		// std::cout << "Loading environment from " << filename << std::endl;
 		// if (textures.environmentCube.image) {
 		// 	textures.environmentCube.destroy();
@@ -557,6 +562,7 @@ public:
 
 	void loadAssets()
 	{
+		std::terminate();
 		// struct stat info;
 		// if (stat(assetpath.c_str(), &info) != 0) {
 		// 	std::string msg = "Could not locate asset path in \"" + assetpath + "\".\nMake sure binary is run from correct relative directory!";
@@ -598,6 +604,7 @@ public:
 
 	void setupDescriptors()
 	{
+		std::terminate();
 		// /*
 		// 	Descriptor Pool
 		// */
@@ -864,6 +871,7 @@ public:
 	// Depending on material setting, we need different pipeline variants per set, e.g. one with back-face culling, one without and one with alpha-blending enabled. This function generates such a set.
 	void addPipelineSet(const std::string prefix, const std::string vertexShader, const std::string fragmentShader)
 	{
+		std::terminate();
 		// VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCI{};
 		// inputAssemblyStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		// inputAssemblyStateCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -1009,6 +1017,7 @@ public:
 	*/
 	void generateBRDFLUT()
 	{
+		std::terminate();
 		// auto tStart = std::chrono::high_resolution_clock::now();
 		//
 		// const VkFormat format = VK_FORMAT_R16G16_SFLOAT;
@@ -1271,6 +1280,7 @@ public:
 	*/
 	void generateCubemaps()
 	{
+		std::terminate();
 		// enum Target { IRRADIANCE = 0, PREFILTEREDENV = 1 };
 		//
 		// for (uint32_t target = 0; target < PREFILTEREDENV + 1; target++) {
@@ -1830,6 +1840,7 @@ public:
 	*/
 	void prepareUniformBuffers()
 	{
+		std::terminate();
 		// for (auto &uniformBuffer : uniformBuffers) {
 		// 	uniformBuffer.scene.create(vulkanDevice, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(shaderValuesScene));
 		// 	uniformBuffer.skybox.create(vulkanDevice, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(shaderValuesSkybox));
@@ -1840,6 +1851,7 @@ public:
 
 	void updateUniformData()
 	{
+		std::terminate();
 		// // Scene
 		// shaderValuesScene.projection = camera.matrices.perspective;
 		// shaderValuesScene.view = camera.matrices.view;
@@ -1867,6 +1879,7 @@ public:
 
 	void updateParams()
 	{
+		std::terminate();
 		// shaderValuesParams.lightDir = glm::vec4(
 		// 	sin(glm::radians(lightSource.rotation.x)) * cos(glm::radians(lightSource.rotation.y)),
 		// 	sin(glm::radians(lightSource.rotation.y)),
