@@ -1052,8 +1052,8 @@ public:
 		// // Sampler
 		// VkSamplerCreateInfo samplerCI{};
 		// samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		// samplerCI.magFilter = VK_FILTER_LINEAR;
-		// samplerCI.minFilter = VK_FILTER_LINEAR;
+		// samplerCI.magFilter = SDL_GPU_FILTER_LINEAR;
+		// samplerCI.minFilter = SDL_GPU_FILTER_LINEAR;
 		// samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		// samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		// samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -1336,8 +1336,8 @@ public:
 		// 		// Sampler
 		// 		VkSamplerCreateInfo samplerCI{};
 		// 		samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		// 		samplerCI.magFilter = VK_FILTER_LINEAR;
-		// 		samplerCI.minFilter = VK_FILTER_LINEAR;
+		// 		samplerCI.magFilter = SDL_GPU_FILTER_LINEAR;
+		// 		samplerCI.minFilter = SDL_GPU_FILTER_LINEAR;
 		// 		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 		// 		samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		// 		samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;

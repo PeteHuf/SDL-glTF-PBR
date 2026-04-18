@@ -75,7 +75,7 @@ namespace vkglTF
 		SDL_GPUSampler *sampler;
 		void updateDescriptor();
 		void destroy();
-		// void fromglTfImage(tinygltf::Image& gltfimage, std::string path, TextureSampler textureSampler, vks::VulkanDevice* device, vks::DummyQueue* copyQueue);
+		void fromglTfImage(tinygltf::Image& gltfimage, std::string path, TextureSampler textureSampler, vks::VulkanDevice* device, vks::DummyQueue* copyQueue);
 	};
 
 	struct Material {
@@ -258,8 +258,8 @@ namespace vkglTF
 		void loadMaterials(tinygltf::Model& gltfModel);
 		void loadAnimations(tinygltf::Model& gltfModel);
 		void loadFromFile(std::string filename, vks::VulkanDevice* device, vks::DummyQueue* transferQueue, float scale = 1.0f);
-		void drawNode(Node* node, SDL_GPUCommandBuffer* commandBuffer);
-		void draw(SDL_GPUCommandBuffer* commandBuffer);
+		void drawNode(Node* node, /*SDL_GPUCommandBuffer* commandBuffer*/ SDL_GPURenderPass* renderPass);
+		void draw(/*SDL_GPUCommandBuffer* commandBuffer*/ SDL_GPURenderPass* renderPass);
 		void calculateBoundingBox(Node* node, Node* parent);
 		void getSceneDimensions();
 		void updateAnimation(uint32_t index, float time);
