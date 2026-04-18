@@ -730,34 +730,33 @@ namespace vkglTF
 	// Model
 	void Model::destroy(SDL_GPUDevice* device)
 	{
-		std::terminate();
-		// if (vertices.buffer != nullptr) {
-		// 	vkDestroyBuffer(device, vertices.buffer, nullptr);
-		// 	vkFreeMemory(device, vertices.memory, nullptr);
-		// 	vertices.buffer = nullptr;
-		// }
-		// if (indices.buffer != nullptr) {
-		// 	vkDestroyBuffer(device, indices.buffer, nullptr);
-		// 	vkFreeMemory(device, indices.memory, nullptr);
-		// 	indices.buffer = nullptr;
-		// }
-		// for (auto texture : textures) {
-		// 	texture.destroy();
-		// }
-		// textures.resize(0);
-		// textureSamplers.resize(0);
-		// for (auto node : nodes) {
-		// 	delete node;
-		// }
-		// materials.resize(0);
-		// animations.resize(0);
-		// nodes.resize(0);
-		// linearNodes.resize(0);
-		// extensions.resize(0);
-		// for (auto skin : skins) {
-		// 	delete skin;
-		// }
-		// skins.resize(0);
+		if (vertices.buffer != nullptr) {
+			SDL_ReleaseGPUBuffer(device, vertices.buffer);
+			// vkFreeMemory(device, vertices.memory, nullptr);
+			vertices.buffer = nullptr;
+		}
+		if (indices.buffer != nullptr) {
+			SDL_ReleaseGPUBuffer(device, indices.buffer);
+			// vkFreeMemory(device, indices.memory, nullptr);
+			indices.buffer = nullptr;
+		}
+		for (auto texture : textures) {
+			texture.destroy();
+		}
+		textures.resize(0);
+		textureSamplers.resize(0);
+		for (auto node : nodes) {
+			delete node;
+		}
+		materials.resize(0);
+		animations.resize(0);
+		nodes.resize(0);
+		linearNodes.resize(0);
+		extensions.resize(0);
+		for (auto skin : skins) {
+			delete skin;
+		}
+		skins.resize(0);
 	};
 
 	void Model::loadNode(vkglTF::Node *parent, const tinygltf::Node &node, uint32_t nodeIndex, const tinygltf::Model &model, LoaderInfo& loaderInfo, float globalscale)
@@ -1048,7 +1047,6 @@ namespace vkglTF
 
 	void Model::loadTextures(tinygltf::Model &gltfModel, vks::VulkanDevice *device, vks::DummyQueue* transferQueue)
 	{
-		std::terminate();
 		for (tinygltf::Texture &tex : gltfModel.textures) {
 			int source = tex.source;
 			// If this texture uses the KHR_texture_basisu, we need to get the source index from the extension structure
@@ -1439,8 +1437,6 @@ namespace vkglTF
 			SDL_GPUTransferBuffer* buffer;
 			// VkDeviceMemory memory;
 		} vertexStaging, indexStaging;
-
-		std::terminate();
 
 		// Create staging buffers
 		// Vertex data

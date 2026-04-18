@@ -527,24 +527,23 @@ public:
 
 	void loadScene(std::string filename)
 	{
-		std::terminate();
-		// std::cout << "Loading scene from " << filename << std::endl;
-		// models.scene.destroy(device);
-		// animationIndex = 0;
-		// animationTimer = 0.0f;
-		// auto tStart = std::chrono::high_resolution_clock::now();
-		// models.scene.loadFromFile(filename, vulkanDevice, queue);
-		// createMaterialBuffer();
-		// createMeshDataBuffer();
-		// auto tFileLoad = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - tStart).count();
-		// std::cout << "Loading took " << tFileLoad << " ms" << std::endl;
-		// // Check and list unsupported extensions
-		// for (auto& ext : models.scene.extensions) {
-		// 	if (std::find(supportedExtensions.begin(), supportedExtensions.end(), ext) == supportedExtensions.end()) {
-		// 		std::cout << "[WARN] Unsupported extension " << ext << " detected. Scene may not work or display as intended\n";
-		// 	}
-		// }
-		// resetCamera();
+		std::cout << "Loading scene from " << filename << std::endl;
+		models.scene.destroy(device);
+		animationIndex = 0;
+		animationTimer = 0.0f;
+		auto tStart = std::chrono::high_resolution_clock::now();
+		models.scene.loadFromFile(filename, vulkanDevice, queue);
+		createMaterialBuffer();
+		createMeshDataBuffer();
+		auto tFileLoad = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - tStart).count();
+		std::cout << "Loading took " << tFileLoad << " ms" << std::endl;
+		// Check and list unsupported extensions
+		for (auto& ext : models.scene.extensions) {
+			if (std::find(supportedExtensions.begin(), supportedExtensions.end(), ext) == supportedExtensions.end()) {
+				std::cout << "[WARN] Unsupported extension " << ext << " detected. Scene may not work or display as intended\n";
+			}
+		}
+		resetCamera();
 	}
 
 	void loadEnvironment(std::string filename)
