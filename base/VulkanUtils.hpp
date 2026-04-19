@@ -27,6 +27,49 @@ struct Buffer {
 	// VkDescriptorBufferInfo descriptor;
 	int32_t count = 0;
 	// VkDeviceSize actualBufferSize{ 0 };
+	// void *mapped = nullptr;
+	// void create(vks::VulkanDevice *device, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, bool map = true) {
+	// 	// this->device = device->logicalDevice;
+	// 	// device->createBuffer(usageFlags, memoryPropertyFlags, size, &buffer, &memory, nullptr, &actualBufferSize);
+	// 	// descriptor = { buffer, 0, size };
+	// 	// if (map) {
+	// 	// 	VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped));
+	// 	// }
+	// }
+	void destroy() {
+		// if (mapped) {
+		// 	unmap();
+		// }
+		SDL_ReleaseGPUBuffer(device, buffer);
+		// vkFreeMemory(device, memory, nullptr);
+		buffer = nullptr;
+		// memory = nullptr;
+	}
+	// void map() {
+	// 	// VK_CHECK_RESULT(vkMapMemory(device, memory, 0, VK_WHOLE_SIZE, 0, &mapped));
+	// }
+	// void unmap() {
+	// 	if (mapped) {
+	// 		SDL_UnmapGPUTransferBuffer(device, buffer);
+	// 		mapped = nullptr;
+	// 	}
+	// }
+	// void flush(VkDeviceSize size = VK_WHOLE_SIZE) {
+	// 	// VkMappedMemoryRange mappedRange{};
+	// 	// mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+	// 	// mappedRange.memory = memory;
+	// 	// mappedRange.size = size;
+	// 	// VK_CHECK_RESULT(vkFlushMappedMemoryRanges(device, 1, &mappedRange));
+	// }
+};
+
+struct TransferBuffer {
+	SDL_GPUDevice* device;
+	SDL_GPUTransferBuffer* buffer = nullptr;
+	// VkDeviceMemory memory = nullptr;
+	// VkDescriptorBufferInfo descriptor;
+	int32_t count = 0;
+	// VkDeviceSize actualBufferSize{ 0 };
 	void *mapped = nullptr;
 	// void create(vks::VulkanDevice *device, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, bool map = true) {
 	// 	// this->device = device->logicalDevice;
@@ -36,24 +79,24 @@ struct Buffer {
 	// 	// 	VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped));
 	// 	// }
 	// }
-	// void destroy() {
-	// 	// if (mapped) {
-	// 	// 	unmap();
-	// 	// }
-	// 	// vkDestroyBuffer(device, buffer, nullptr);
-	// 	// vkFreeMemory(device, memory, nullptr);
-	// 	// buffer = nullptr;
-	// 	// memory = nullptr;
-	// }
+	void destroy() {
+		if (mapped) {
+			unmap();
+		}
+		SDL_ReleaseGPUTransferBuffer(device, buffer);
+		// vkFreeMemory(device, memory, nullptr);
+		buffer = nullptr;
+		// memory = nullptr;
+	}
 	// void map() {
 	// 	// VK_CHECK_RESULT(vkMapMemory(device, memory, 0, VK_WHOLE_SIZE, 0, &mapped));
 	// }
-	// void unmap() {
-	// 	// if (mapped) {
-	// 	// 	vkUnmapMemory(device, memory);
-	// 	// 	mapped = nullptr;
-	// 	// }
-	// }
+	void unmap() {
+		if (mapped) {
+			SDL_UnmapGPUTransferBuffer(device, buffer);
+			mapped = nullptr;
+		}
+	}
 	// void flush(VkDeviceSize size = VK_WHOLE_SIZE) {
 	// 	// VkMappedMemoryRange mappedRange{};
 	// 	// mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;

@@ -140,7 +140,7 @@ public:
 		float alphaMaskCutoff;
 		float emissiveStrength;
 	};
-	// Buffer shaderMaterialBuffer;
+	Buffer shaderMaterialBuffer;
 	// VkDescriptorSet descriptorSetMaterials{ nullptr };
 
 	struct MeshPushConstantBlock {
@@ -154,7 +154,7 @@ public:
 		glm::mat4 jointMatrix[MAX_NUM_JOINTS]{};
 		uint32_t jointcount{ 0 };
 	};
-	// std::vector<Buffer> shaderMeshDataBuffers;
+	std::vector<Buffer> shaderMeshDataBuffers;
 	// std::vector<VkDescriptorSet> descriptorSetsMeshData;
 
 	std::map<std::string, std::string> environments;
@@ -378,66 +378,84 @@ public:
 	// The fragment shader then get's the index into this material array from a push constant set per primitive
 	void createMaterialBuffer()
 	{
-		std::terminate();
-		// std::vector<ShaderMaterial> shaderMaterials{};
-		// for (auto& material : models.scene.materials) {
-		// 	ShaderMaterial shaderMaterial{};
-		//
-		// 	shaderMaterial.emissiveFactor = material.emissiveFactor;
-		// 	// To save space, availabilty and texture coordinate set are combined
-		// 	// -1 = texture not used for this material, >= 0 texture used and index of texture coordinate set
-		// 	shaderMaterial.colorTextureSet = material.baseColorTexture != nullptr ? material.texCoordSets.baseColor : -1;
-		// 	shaderMaterial.normalTextureSet = material.normalTexture != nullptr ? material.texCoordSets.normal : -1;
-		// 	shaderMaterial.occlusionTextureSet = material.occlusionTexture != nullptr ? material.texCoordSets.occlusion : -1;
-		// 	shaderMaterial.emissiveTextureSet = material.emissiveTexture != nullptr ? material.texCoordSets.emissive : -1;
-		// 	shaderMaterial.alphaMask = static_cast<float>(material.alphaMode == vkglTF::Material::ALPHAMODE_MASK);
-		// 	shaderMaterial.alphaMaskCutoff = material.alphaCutoff;
-		// 	shaderMaterial.emissiveStrength = material.emissiveStrength;
-		//
-		// 	if (material.pbrWorkflows.metallicRoughness) {
-		// 		// Metallic roughness workflow
-		// 		shaderMaterial.workflow = static_cast<float>(PBR_WORKFLOW_METALLIC_ROUGHNESS);
-		// 		shaderMaterial.baseColorFactor = material.baseColorFactor;
-		// 		shaderMaterial.metallicFactor = material.metallicFactor;
-		// 		shaderMaterial.roughnessFactor = material.roughnessFactor;
-		// 		shaderMaterial.PhysicalDescriptorTextureSet = material.metallicRoughnessTexture != nullptr ? material.texCoordSets.metallicRoughness : -1;
-		// 		shaderMaterial.colorTextureSet = material.baseColorTexture != nullptr ? material.texCoordSets.baseColor : -1;
-		// 	} else {
-		// 		if (material.pbrWorkflows.specularGlossiness) {
-		// 			// Specular glossiness workflow
-		// 			shaderMaterial.workflow = static_cast<float>(PBR_WORKFLOW_SPECULAR_GLOSSINESS);
-		// 			shaderMaterial.PhysicalDescriptorTextureSet = material.extension.specularGlossinessTexture != nullptr ? material.texCoordSets.specularGlossiness : -1;
-		// 			shaderMaterial.colorTextureSet = material.extension.diffuseTexture != nullptr ? material.texCoordSets.baseColor : -1;
-		// 			shaderMaterial.diffuseFactor = material.extension.diffuseFactor;
-		// 			shaderMaterial.specularFactor = glm::vec4(material.extension.specularFactor, 1.0f);
-		// 		}
-		// 	}
-		//
-		// 	shaderMaterials.push_back(shaderMaterial);
-		// }
-		//
-		// if (shaderMaterialBuffer.buffer != nullptr) {
-		// 	shaderMaterialBuffer.destroy();
-		// }
-		// VkDeviceSize bufferSize = shaderMaterials.size() * sizeof(ShaderMaterial);
-		// Buffer stagingBuffer;
-		// VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &stagingBuffer.buffer, &stagingBuffer.memory, shaderMaterials.data()));
-		// VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bufferSize, &shaderMaterialBuffer.buffer, &shaderMaterialBuffer.memory));
-		//
-		// // Copy from staging buffers
-		// SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		std::vector<ShaderMaterial> shaderMaterials{};
+		for (auto& material : models.scene.materials) {
+			ShaderMaterial shaderMaterial{};
+
+			shaderMaterial.emissiveFactor = material.emissiveFactor;
+			// To save space, availabilty and texture coordinate set are combined
+			// -1 = texture not used for this material, >= 0 texture used and index of texture coordinate set
+			shaderMaterial.colorTextureSet = material.baseColorTexture != nullptr ? material.texCoordSets.baseColor : -1;
+			shaderMaterial.normalTextureSet = material.normalTexture != nullptr ? material.texCoordSets.normal : -1;
+			shaderMaterial.occlusionTextureSet = material.occlusionTexture != nullptr ? material.texCoordSets.occlusion : -1;
+			shaderMaterial.emissiveTextureSet = material.emissiveTexture != nullptr ? material.texCoordSets.emissive : -1;
+			shaderMaterial.alphaMask = static_cast<float>(material.alphaMode == vkglTF::Material::ALPHAMODE_MASK);
+			shaderMaterial.alphaMaskCutoff = material.alphaCutoff;
+			shaderMaterial.emissiveStrength = material.emissiveStrength;
+
+			if (material.pbrWorkflows.metallicRoughness) {
+				// Metallic roughness workflow
+				shaderMaterial.workflow = static_cast<float>(PBR_WORKFLOW_METALLIC_ROUGHNESS);
+				shaderMaterial.baseColorFactor = material.baseColorFactor;
+				shaderMaterial.metallicFactor = material.metallicFactor;
+				shaderMaterial.roughnessFactor = material.roughnessFactor;
+				shaderMaterial.PhysicalDescriptorTextureSet = material.metallicRoughnessTexture != nullptr ? material.texCoordSets.metallicRoughness : -1;
+				shaderMaterial.colorTextureSet = material.baseColorTexture != nullptr ? material.texCoordSets.baseColor : -1;
+			} else {
+				if (material.pbrWorkflows.specularGlossiness) {
+					// Specular glossiness workflow
+					shaderMaterial.workflow = static_cast<float>(PBR_WORKFLOW_SPECULAR_GLOSSINESS);
+					shaderMaterial.PhysicalDescriptorTextureSet = material.extension.specularGlossinessTexture != nullptr ? material.texCoordSets.specularGlossiness : -1;
+					shaderMaterial.colorTextureSet = material.extension.diffuseTexture != nullptr ? material.texCoordSets.baseColor : -1;
+					shaderMaterial.diffuseFactor = material.extension.diffuseFactor;
+					shaderMaterial.specularFactor = glm::vec4(material.extension.specularFactor, 1.0f);
+				}
+			}
+
+			shaderMaterials.push_back(shaderMaterial);
+		}
+
+		if (shaderMaterialBuffer.buffer != nullptr) {
+			shaderMaterialBuffer.destroy();
+		}
+		Uint32 bufferSize = static_cast<Uint32>(shaderMaterials.size() * sizeof(ShaderMaterial)); // PETEHUF_TODO: this may be wrong buffer useage SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
+		TransferBuffer stagingBuffer;
+		vulkanDevice->createTransferBuffer(SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD, bufferSize, &stagingBuffer.buffer, /*&stagingBuffer.memory,*/ shaderMaterials.data());
+		vulkanDevice->createBuffer(SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ, /*VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,*/ bufferSize, &shaderMaterialBuffer.buffer/*, &shaderMaterialBuffer.memory*/);
+
+		// Copy from staging buffers
+		SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(/*VK_COMMAND_BUFFER_LEVEL_PRIMARY, true*/);
 		// VkBufferCopy copyRegion{};
 		// copyRegion.size = bufferSize;
 		// vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMaterialBuffer.buffer, 1, &copyRegion);
-		// vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
-		// stagingBuffer.device = device;
-		// stagingBuffer.destroy();
-		//
-		// // Update descriptor
+		SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(copyCmd);
+		{
+			SDL_GPUTransferBufferLocation transferBufferLocation {
+				.transfer_buffer = stagingBuffer.buffer,
+				.offset = 0
+			};
+
+			SDL_GPUBufferRegion localBufferLocation {
+				.buffer = shaderMaterialBuffer.buffer,
+				.offset = 0,
+				.size = bufferSize
+			};
+
+ 			SDL_UploadToGPUBuffer(copyPass, &transferBufferLocation, &localBufferLocation, false);
+		}
+
+		//vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
+		SDL_EndGPUCopyPass(copyPass);
+		SDL_SubmitGPUCommandBuffer(copyCmd);
+
+		stagingBuffer.device = device;
+		stagingBuffer.destroy();
+
+		// Update descriptor
 		// shaderMaterialBuffer.descriptor.buffer = shaderMaterialBuffer.buffer;
 		// shaderMaterialBuffer.descriptor.offset = 0;
 		// shaderMaterialBuffer.descriptor.range = bufferSize;
-		// shaderMaterialBuffer.device = device;
+		shaderMaterialBuffer.device = device;
 	}
 
 	// We place all the shader data blocks for all meshes (node) into a single buffer
@@ -447,48 +465,68 @@ public:
 	// @todo: Update
 	void createMeshDataBuffer()
 	{
-		std::terminate();
-		// std::vector<ShaderMeshData> shaderMeshData{};
-		// for (auto& node : models.scene.linearNodes) {
-		// 	ShaderMeshData meshData{};
-		// 	if (node->mesh) {
-		// 		memcpy(meshData.jointMatrix, node->mesh->jointMatrix, sizeof(glm::mat4) * MAX_NUM_JOINTS);
-		// 		meshData.jointcount = node->mesh->jointcount;
-		// 		meshData.matrix = node->mesh->matrix;
-		// 		shaderMeshData.push_back(meshData);
-		// 	}
-		// }
-		//
-		// for (auto& shaderMeshDataBuffer : shaderMeshDataBuffers) {
-		// 	if (shaderMeshDataBuffer.buffer != nullptr) {
-		// 		shaderMeshDataBuffer.destroy();
-		// 	}
-		// 	VkDeviceSize bufferSize = shaderMeshData.size() * sizeof(ShaderMeshData);
-		// 	if (!vulkanDevice->requiresStaging) {
-		// 		// Prefer a host visible device buffer (ReBAR/SAM on discreate GPUs, always available on integrated GPUs)
-		// 		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &shaderMeshDataBuffer.buffer, &shaderMeshDataBuffer.memory));
-		// 		shaderMeshDataBuffer.device = device;
-		// 		shaderMeshDataBuffer.map();
-		// 		memcpy(shaderMeshDataBuffer.mapped, shaderMeshData.data(), bufferSize);
-		// 	} else {
-		// 		Buffer stagingBuffer;
-		// 		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &stagingBuffer.buffer, &stagingBuffer.memory, shaderMeshData.data()));
-		// 		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bufferSize, &shaderMeshDataBuffer.buffer, &shaderMeshDataBuffer.memory));
-		// 		// Copy from staging buffers
-		// 		SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-		// 		VkBufferCopy copyRegion{};
-		// 		copyRegion.size = bufferSize;
-		// 		vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffer.buffer, 1, &copyRegion);
-		// 		vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
-		// 		stagingBuffer.device = device;
-		// 		stagingBuffer.destroy();
-		// 	}
-		// 	// Update descriptor
-		// 	shaderMeshDataBuffer.descriptor.buffer = shaderMeshDataBuffer.buffer;
-		// 	shaderMeshDataBuffer.descriptor.offset = 0;
-		// 	shaderMeshDataBuffer.descriptor.range = bufferSize;
-		// 	shaderMeshDataBuffer.device = device;
-		// }
+		std::vector<ShaderMeshData> shaderMeshData{};
+		for (auto& node : models.scene.linearNodes) {
+			ShaderMeshData meshData{};
+			if (node->mesh) {
+				memcpy(meshData.jointMatrix, node->mesh->jointMatrix, sizeof(glm::mat4) * MAX_NUM_JOINTS);
+				meshData.jointcount = node->mesh->jointcount;
+				meshData.matrix = node->mesh->matrix;
+				shaderMeshData.push_back(meshData);
+			}
+		}
+
+		for (auto& shaderMeshDataBuffer : shaderMeshDataBuffers) {
+			if (shaderMeshDataBuffer.buffer != nullptr) {
+				shaderMeshDataBuffer.destroy();
+			}
+			Uint32 bufferSize = static_cast<Uint32>(shaderMeshData.size() * sizeof(ShaderMeshData));
+			/*if (!vulkanDevice->requiresStaging) { // PETEHUF: I think SDL GPU always requires staging
+				// Prefer a host visible device buffer (ReBAR/SAM on discreate GPUs, always available on integrated GPUs)
+				// PETEHUF_TODO: SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ may be incorrect
+				vulkanDevice->createBuffer(SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ, bufferSize, &shaderMeshDataBuffer.buffer/*, &shaderMeshDataBuffer.memory#1#);
+				shaderMeshDataBuffer.device = device;
+				shaderMeshDataBuffer.map();
+				memcpy(shaderMeshDataBuffer.mapped, shaderMeshData.data(), bufferSize);
+			} else*/ {
+				TransferBuffer stagingBuffer;// PETEHUF_TODO: SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ may be incorrect
+				vulkanDevice->createTransferBuffer(SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD, bufferSize, &stagingBuffer.buffer, /*&stagingBuffer.memory,*/ shaderMeshData.data());
+				vulkanDevice->createBuffer(SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ, bufferSize, &shaderMeshDataBuffer.buffer/*, &shaderMeshDataBuffer.memory*/);
+
+				// Copy from staging buffers
+				SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(/*VK_COMMAND_BUFFER_LEVEL_PRIMARY, true*/);
+				// VkBufferCopy copyRegion{};
+				// copyRegion.size = bufferSize;
+				// vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffer.buffer, 1, &copyRegion);
+				SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(copyCmd);
+				{
+					SDL_GPUTransferBufferLocation transferBufferLocation {
+						.transfer_buffer = stagingBuffer.buffer,
+						.offset = 0
+					};
+
+					SDL_GPUBufferRegion localBufferLocation {
+						.buffer = shaderMeshDataBuffer.buffer,
+						.offset = 0,
+						.size = bufferSize
+					};
+
+					SDL_UploadToGPUBuffer(copyPass, &transferBufferLocation, &localBufferLocation, false);
+				}
+
+				//vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
+				SDL_EndGPUCopyPass(copyPass);
+				SDL_SubmitGPUCommandBuffer(copyCmd);
+
+				stagingBuffer.device = device;
+				stagingBuffer.destroy();
+			}
+			// Update descriptor
+			// shaderMeshDataBuffer.descriptor.buffer = shaderMeshDataBuffer.buffer;
+			// shaderMeshDataBuffer.descriptor.offset = 0;
+			// shaderMeshDataBuffer.descriptor.range = bufferSize;
+			shaderMeshDataBuffer.device = device;
+		}
 	}
 
 	void updateMeshDataBuffer(uint32_t index)
