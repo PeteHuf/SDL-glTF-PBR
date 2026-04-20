@@ -24,7 +24,7 @@ namespace vks
 	class Texture {
 	public:
 		vks::VulkanDevice *device;
-		// VkImage image = nullptr;
+		SDL_Surface* image = nullptr;
 		// VkImageLayout imageLayout;
 		// VkDeviceMemory deviceMemory;
 		// VkImageView view;
@@ -33,6 +33,8 @@ namespace vks
 		uint32_t layerCount;
 		// VkDescriptorImageInfo descriptor;
 		SDL_GPUSampler* sampler;
+
+		SDL_GPUTexture *MipmapTexture; // PETEHUF_TODO: temp
 
 		void updateDescriptor()
 		{
@@ -44,16 +46,78 @@ namespace vks
 		void destroy()
 		{
 			// vkDestroyImageView(device->logicalDevice, view, nullptr);
-			// vkDestroyImage(device->logicalDevice, image, nullptr);
+			SDL_DestroySurface(image);
 			// if (sampler)
 			// {
 			// 	vkDestroySampler(device->logicalDevice, sampler, nullptr);
 			// }
 			// vkFreeMemory(device->logicalDevice, deviceMemory, nullptr);
+
+			if (MipmapTexture) {
+				SDL_ReleaseGPUTexture(device->logicalDevice, MipmapTexture);
+			}
 		}
 	};
 
 	class Texture2D : public Texture {
+		/* from SDL gpu examples
+		* Copyright (C) 2024 Caleb Cornett <caleb.cornett@outlook.com>
+		*
+		* This software is provided 'as-is', without any express or implied
+		* warranty.  In no event will the authors be held liable for any damages
+		* arising from the use of this software.
+		*
+		* Permission is granted to anyone to use this software for any purpose,
+		* including commercial applications, and to alter it and redistribute it
+		* freely, subject to the following restrictions:
+		*
+		* 1. The origin of this software must not be misrepresented; you must not
+		* claim that you wrote the original software. If you use this software
+		* in a product, an acknowledgment in the product documentation would be
+		* appreciated but is not required.
+		* 2. Altered source versions must be plainly marked as such, and must not be
+		* misrepresented as being the original software.
+		* 3. This notice may not be removed or altered from any source distribution.
+		*/
+		SDL_Surface* LoadImage_SDL_example(const char* imageFilename, int desiredChannels)
+		{
+			// char fullPath[256];
+			SDL_Surface *result;
+			SDL_PixelFormat format;
+
+			// SDL_snprintf(fullPath, sizeof(fullPath), "%sContent/Images/%s", BasePath, imageFilename);
+			//
+			// result = SDL_LoadBMP(fullPath);
+
+			// SDL_snprintf(fullPath, sizeof(fullPath), "%sContent/Images/%s", BasePath, imageFilename);
+
+			result = SDL_LoadBMP(imageFilename);
+			if (result == NULL)
+			{
+				SDL_Log("Failed to load BMP: %s", SDL_GetError());
+				return NULL;
+			}
+
+			if (desiredChannels == 4)
+			{
+				format = SDL_PIXELFORMAT_ABGR8888;
+			}
+			else
+			{
+				SDL_assert(!"Unexpected desiredChannels");
+				SDL_DestroySurface(result);
+				return NULL;
+			}
+			if (result->format != format)
+			{
+				SDL_Surface *next = SDL_ConvertSurface(result, format);
+				SDL_DestroySurface(result);
+				result = next;
+			}
+
+			return result;
+		}
+
 	public:
 		void loadFromFile(
 			std::string filename,
@@ -63,6 +127,77 @@ namespace vks
 			SDL_GPUTextureUsageFlags imageUsageFlags = SDL_GPU_TEXTUREUSAGE_SAMPLER/*,
 			VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/)
 		{
+
+			// PETEHUF_TODO: swap this out to load the correct texture if possible
+			SDL_GPUTextureCreateInfo textureCreateInfo{
+				.type = SDL_GPU_TEXTURETYPE_2D,
+				.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+				.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
+				.width = 32,
+				.height = 32,
+				.layer_count_or_depth = 1,
+				.num_levels = 3
+			};
+
+			MipmapTexture = SDL_CreateGPUTexture(
+				device->logicalDevice,
+				&textureCreateInfo
+			);
+
+			Uint32 byteCount = 32 * 32 * 4;
+			SDL_GPUTransferBufferCreateInfo transferBufferCreateInfo{
+				.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+				.size = byteCount
+			};
+			SDL_GPUTransferBuffer *textureTransferBuffer = SDL_CreateGPUTransferBuffer(
+				device->logicalDevice,
+				&transferBufferCreateInfo
+			);
+			Uint8* textureTransferData = static_cast<Uint8*>(SDL_MapGPUTransferBuffer(
+				device->logicalDevice,
+				textureTransferBuffer,
+				false
+			));
+
+			SDL_Surface* imageData = LoadImage_SDL_example("./../data/textures/cube0.bmp", 4);
+			if (imageData == NULL)
+			{
+				SDL_Log("Could not load image data!");
+				std::terminate(); // PETEHUF_TODO: maybe use a better error
+			}
+			SDL_memcpy(textureTransferData, imageData->pixels, byteCount);
+			SDL_DestroySurface(imageData);
+
+			SDL_UnmapGPUTransferBuffer(device->logicalDevice, textureTransferBuffer);
+
+			SDL_GPUCommandBuffer *cmdbuf = SDL_AcquireGPUCommandBuffer(device->logicalDevice);
+			SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(cmdbuf);
+			SDL_GPUTextureTransferInfo textureTransferInfo2{
+				.transfer_buffer = textureTransferBuffer
+			};
+			SDL_GPUTextureRegion textureRegion {
+				.texture = MipmapTexture,
+				.w = 32,
+				.h = 32,
+				.d = 1
+			};
+			SDL_UploadToGPUTexture(
+				copyPass,
+				&textureTransferInfo2,
+				&textureRegion,
+				false
+			);
+			SDL_EndGPUCopyPass(copyPass);
+			SDL_GenerateMipmapsForGPUTexture(cmdbuf, MipmapTexture);
+
+			SDL_SubmitGPUCommandBuffer(cmdbuf);
+
+			SDL_ReleaseGPUTransferBuffer(device->logicalDevice, textureTransferBuffer);
+
+
+
+
+
 			// gli::texture2d tex2D(gli::load(filename.c_str()));
 			// assert(!tex2D.empty());
 			//
@@ -70,7 +205,7 @@ namespace vks
 			// width = static_cast<uint32_t>(tex2D[0].extent().x);
 			// height = static_cast<uint32_t>(tex2D[0].extent().y);
 			// mipLevels = static_cast<uint32_t>(tex2D.levels());
-			//
+
 			// // Get device properites for the requested texture format
 			// VkFormatProperties formatProperties;
 			// vkGetPhysicalDeviceFormatProperties(device->physicalDevice, format, &formatProperties);
@@ -78,13 +213,17 @@ namespace vks
 			// VkMemoryAllocateInfo memAllocInfo{};
 			// memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			// VkMemoryRequirements memReqs;
-			//
+
+
+
+
+
 			// // Use a separate command buffer for texture loading
-			// SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+			// SDL_GPUCommandBuffer* copyCmd = device->createCommandBuffer(/*VK_COMMAND_BUFFER_LEVEL_PRIMARY, true*/);
 			//
 			// // Create a host-visible staging buffer that contains the raw image data
 			// SDL_GPUBuffer* stagingBuffer;
-			// VkDeviceMemory stagingMemory;
+			// // VkDeviceMemory stagingMemory;
 			//
 			// VkBufferCreateInfo bufferCreateInfo{};
 			// bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -236,7 +375,7 @@ namespace vks
 			// viewCreateInfo.subresourceRange.levelCount = mipLevels;
 			// viewCreateInfo.image = image;
 			// VK_CHECK_RESULT(vkCreateImageView(device->logicalDevice, &viewCreateInfo, nullptr, &view));
-			//
+
 			// updateDescriptor();
 		}
 
@@ -252,6 +391,7 @@ namespace vks
 			SDL_GPUTextureUsageFlags imageUsageFlags = SDL_GPU_TEXTUREUSAGE_SAMPLER/*,
 			VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/)
 		{
+			std::terminate();
 			// assert(buffer);
 			//
 			// this->device = device;
@@ -421,6 +561,7 @@ namespace vks
 			SDL_GPUTextureUsageFlags imageUsageFlags = SDL_GPU_TEXTUREUSAGE_SAMPLER/*,
 			VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL*/)
 		{
+			std::terminate();
 			// gli::texture_cube texCube(gli::load(filename));
 			// assert(!texCube.empty());
 			//

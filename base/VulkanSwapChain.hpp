@@ -20,7 +20,7 @@
 #include "macros.h"
 
 // typedef struct _SwapChainBuffers {
-// 	VkImage image;
+// 	SDL_Surface* image;
 // 	VkImageView view;
 // } SwapChainBuffer;
 
@@ -46,7 +46,7 @@ public:
 // 	VkColorSpaceKHR colorSpace;
 // 	VkSwapchainKHR swapChain = nullptr;
 // 	uint32_t imageCount;
-// 	std::vector<VkImage> images;
+// 	std::vector<SDL_Surface*> images;
 // 	std::vector<SwapChainBuffer> buffers;
 // 	VkExtent2D extent = {};
 // 	uint32_t queueNodeIndex = UINT32_MAX;

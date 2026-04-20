@@ -64,7 +64,7 @@ namespace vkglTF
 
 	struct Texture {
 		vks::VulkanDevice *device;
-		// VkImage image;
+		// SDL_Surface* image;
 		// VkImageLayout imageLayout;
 		// VkDeviceMemory deviceMemory;
 		// VkImageView view;

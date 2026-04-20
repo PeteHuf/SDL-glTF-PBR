@@ -60,12 +60,12 @@ private:
 	// VkDebugReportCallbackEXT debugReportCallback;
 	// struct MultisampleTarget {
 	// 	struct {
-	// 		VkImage image;
+	// 		SDL_Surface* image;
 	// 		VkImageView view;
 	// 		VkDeviceMemory memory;
 	// 	} color;
 	// 	struct {
-	// 		VkImage image;
+	// 		SDL_Surface* image;
 	// 		VkImageView view;
 	// 		VkDeviceMemory memory;
 	// 	} depth;
@@ -110,7 +110,7 @@ public:
 	} settings;
 	
 	// struct DepthStencil {
-	// 	VkImage image;
+	// 	SDL_Surface* image;
 	// 	VkDeviceMemory mem;
 	// 	VkImageView view;
 	// } depthStencil;

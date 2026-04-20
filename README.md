@@ -1,5 +1,7 @@
 Attempting to port `https://github.com/SaschaWillems/Vulkan-glTF-PBR/tree/master` to SDL3 using the GPU API.
 
+Started as a learning project. Feel like the scope is growing faster than my learning can keep up. Going to try porting the glTF loader to an SDL3 example. My target use doesn't require PBR.
+
 # Vulkan physically-Based Rendering using glTF 2.0 models
 
 <img src="./screenshots/damagedhelmet.jpg" width="644px"> <img src="./screenshots/polly.jpg" width="320px"> <img src="./screenshots/busterdrone.jpg" width="320px">

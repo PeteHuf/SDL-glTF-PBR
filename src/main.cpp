@@ -531,36 +531,54 @@ public:
 
 	void updateMeshDataBuffer(uint32_t index)
 	{
-		std::terminate();
-		// // @todo: optimize (no push, use fixed size)
-		// std::vector<ShaderMeshData> shaderMeshData{};
-		// for (auto& node : models.scene.linearNodes) {
-		// 	ShaderMeshData meshData{};
-		// 	if (node->mesh) {
-		// 		memcpy(meshData.jointMatrix, node->mesh->jointMatrix, sizeof(glm::mat4) * MAX_NUM_JOINTS);
-		// 		meshData.jointcount = node->mesh->jointcount;
-		// 		meshData.matrix = node->mesh->matrix;
-		// 		shaderMeshData.push_back(meshData);
-		// 	}
-		// }
-		//
-		// VkDeviceSize bufferSize = shaderMeshData.size() * sizeof(ShaderMeshData);
-		//
-		// if (!vulkanDevice->requiresStaging) {
-		// 	memcpy(shaderMeshDataBuffers[index].mapped, shaderMeshData.data(), bufferSize);
-		// }
-		// else {
-		// 	Buffer stagingBuffer;
-		// 	VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, bufferSize, &stagingBuffer.buffer, &stagingBuffer.memory, shaderMeshData.data()));
-		// 	// Copy from staging buffers
-		// 	SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-		// 	VkBufferCopy copyRegion{};
-		// 	copyRegion.size = bufferSize;
-		// 	vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffers[index].buffer, 1, &copyRegion);
-		// 	vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
-		// 	stagingBuffer.device = device;
-		// 	stagingBuffer.destroy();
-		// }
+		// @todo: optimize (no push, use fixed size)
+		std::vector<ShaderMeshData> shaderMeshData{};
+		for (auto& node : models.scene.linearNodes) {
+			ShaderMeshData meshData{};
+			if (node->mesh) {
+				memcpy(meshData.jointMatrix, node->mesh->jointMatrix, sizeof(glm::mat4) * MAX_NUM_JOINTS);
+				meshData.jointcount = node->mesh->jointcount;
+				meshData.matrix = node->mesh->matrix;
+				shaderMeshData.push_back(meshData);
+			}
+		}
+
+		Uint32 bufferSize = static_cast<Uint32>(shaderMeshData.size() * sizeof(ShaderMeshData));
+
+		/*if (!vulkanDevice->requiresStaging) { // PETEHUF: I believe SDL always requires staging
+			memcpy(shaderMeshDataBuffers[index].mapped, shaderMeshData.data(), bufferSize);
+		}
+		else*/ {
+			TransferBuffer stagingBuffer;
+			vulkanDevice->createTransferBuffer(SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD, bufferSize, &stagingBuffer.buffer, /*&stagingBuffer.memory,*/ shaderMeshData.data());
+			// Copy from staging buffers
+			SDL_GPUCommandBuffer* copyCmd = vulkanDevice->createCommandBuffer(/*VK_COMMAND_BUFFER_LEVEL_PRIMARY, true*/);
+			// VkBufferCopy copyRegion{};
+			// copyRegion.size = bufferSize;
+			// vkCmdCopyBuffer(copyCmd, stagingBuffer.buffer, shaderMeshDataBuffers[index].buffer, 1, &copyRegion);
+			SDL_GPUCopyPass* copyPass = SDL_BeginGPUCopyPass(copyCmd);
+			{
+				SDL_GPUTransferBufferLocation transferBufferLocation {
+					.transfer_buffer = stagingBuffer.buffer,
+					.offset = 0
+				};
+
+				SDL_GPUBufferRegion localBufferLocation {
+					.buffer = shaderMeshDataBuffers[index].buffer,
+					.offset = 0,
+					.size = bufferSize
+				};
+
+				SDL_UploadToGPUBuffer(copyPass, &transferBufferLocation, &localBufferLocation, false);
+			}
+
+			//vulkanDevice->flushCommandBuffer(copyCmd, queue, true);
+			SDL_EndGPUCopyPass(copyPass);
+			SDL_SubmitGPUCommandBuffer(copyCmd);
+
+			stagingBuffer.device = device;
+			stagingBuffer.destroy();
+		}
 	}
 
 	void loadScene(std::string filename)
@@ -586,15 +604,14 @@ public:
 
 	void loadEnvironment(std::string filename)
 	{
-		std::terminate();
-		// std::cout << "Loading environment from " << filename << std::endl;
-		// if (textures.environmentCube.image) {
-		// 	textures.environmentCube.destroy();
-		// 	textures.irradianceCube.destroy();
-		// 	textures.prefilteredCube.destroy();
-		// }
-		// textures.environmentCube.loadFromFile(filename, VK_FORMAT_R16G16B16A16_SFLOAT, vulkanDevice, queue);
-		// generateCubemaps();
+		std::cout << "Loading environment from " << filename << std::endl;
+		if (textures.environmentCube.image) {
+			textures.environmentCube.destroy();
+			textures.irradianceCube.destroy();
+			textures.prefilteredCube.destroy();
+		}
+		textures.environmentCube.loadFromFile(filename, SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT, vulkanDevice, queue);
+		generateCubemaps();
 	}
 
 	void loadAssets()
@@ -635,7 +652,7 @@ public:
 		loadScene(sceneFile.c_str());
 		models.skybox.loadFromFile(assetpath + "models/Box/glTF-Embedded/Box.gltf", vulkanDevice, queue);
 
-		loadEnvironment(envMapFile.c_str());
+		// loadEnvironment(envMapFile.c_str()); // PETEHUF_TODO: skip the environment for now
 	}
 
 	void setupDescriptors()
@@ -1334,7 +1351,7 @@ public:
 		// 		dim = 64;
 		// 		break;
 		// 	case PREFILTEREDENV:
-		// 		format = VK_FORMAT_R16G16B16A16_SFLOAT;
+		// 		format = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
 		// 		dim = 512;
 		// 		break;
 		// 	};
@@ -1443,7 +1460,7 @@ public:
 		// 	VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassCI, nullptr, &renderpass));
 		//
 		// 	struct Offscreen {
-		// 		VkImage image;
+		// 		SDL_Surface* image;
 		// 		VkImageView view;
 		// 		VkDeviceMemory memory;
 		// 		VkFramebuffer framebuffer;
@@ -1976,7 +1993,7 @@ public:
 		// }
 
 		loadAssets();
-		generateBRDFLUT();
+		// generateBRDFLUT(); // PETEHUF_TODO: skip this for now
 		prepareUniformBuffers();
 		setupDescriptors();
 		preparePipelines();

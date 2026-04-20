@@ -28,14 +28,18 @@ struct Buffer {
 	int32_t count = 0;
 	// VkDeviceSize actualBufferSize{ 0 };
 	// void *mapped = nullptr;
-	// void create(vks::VulkanDevice *device, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, bool map = true) {
-	// 	// this->device = device->logicalDevice;
-	// 	// device->createBuffer(usageFlags, memoryPropertyFlags, size, &buffer, &memory, nullptr, &actualBufferSize);
-	// 	// descriptor = { buffer, 0, size };
-	// 	// if (map) {
-	// 	// 	VK_CHECK_RESULT(vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped));
-	// 	// }
-	// }
+	void create(vks::VulkanDevice *device, SDL_GPUBufferUsageFlags usageFlags, /*VkMemoryPropertyFlags memoryPropertyFlags,*/ Uint32 size, bool map = true) {
+		if (map == true) {
+			std::terminate(); // must use TransferBuffer?
+		}
+
+		this->device = device->logicalDevice;
+		device->createBuffer(usageFlags, /*memoryPropertyFlags,*/ size, &buffer/*, &memory, nullptr, &actualBufferSize*/);
+		//descriptor = { buffer, 0, size };
+		// if (map) {
+		// 	vkMapMemory(device->logicalDevice, memory, 0, actualBufferSize, 0, &mapped);
+		// }
+	}
 	void destroy() {
 		// if (mapped) {
 		// 	unmap();
